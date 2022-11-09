@@ -7,39 +7,43 @@ namespace Graphs
 {
     public class UndirectedGraph
     {
-        public HashSet<Vertex> Vertices { get; private set; }
+        public Dictionary<Vertex, Dictionary<Vertex, Edge>> Edges { get; private set; } = new Dictionary<Vertex, Dictionary<Vertex, Edge>>();
+        public List<Vertex> Vertices { get => Edges.Keys.ToList(); }
 
-        public UndirectedGraph(ICollection<Vertex> vertices)
+        public UndirectedGraph()
         {
-            Vertices = vertices.ToHashSet();
+
         }
-        public bool AddVertex(Vertex v)
+        public Vertex AddVertex(string name = null)
         {
-            return Vertices.Add(v);
+            var vertex = new Vertex(name ?? $"v{Vertices.Count}");
+            Edges[vertex] = new Dictionary<Vertex, Edge>();
+            return vertex;
         }
 
-        public bool AddEdge(Vertex v1, Vertex v2)
+        public bool AddEdge(Vertex v1, Vertex v2, Edge edge)
         {
             if (v1 == v2) return false;
-            return v1.AddNeighbor(v2) && v2.AddNeighbor(v1);
-        }
-
-        public bool RemoveEdge(Vertex v1, Vertex v2)
-        {
-            return v1.RemoveNeighbor(v2) && v2.RemoveNeighbor(v1);
+            try
+            {
+                Edges[v1].Add(v2, edge);
+                Edges[v2].Add(v1, edge);
+            }
+            catch (System.ArgumentException)
+            {
+                return false;
+            }
+            return true;
         }
     }
 
     public struct Vertex
     {
         public readonly string Name { get; }
-        public HashSet<Vertex> Neighbors { get; private set; }
-        public bool AddNeighbor(Vertex v) { return Neighbors.Add(v); }
-        public bool RemoveNeighbor(Vertex v) { return Neighbors.Remove(v); }
+
         public Vertex(string name)
         {
             Name = name;
-            Neighbors = new HashSet<Vertex>();
         }
 
         public static bool operator ==(Vertex left, Vertex right)
@@ -61,5 +65,10 @@ namespace Graphs
         {
             return base.GetHashCode();
         }
+    }
+
+    public class Edge
+    {
+        public object Key { get; private set; }
     }
 }
