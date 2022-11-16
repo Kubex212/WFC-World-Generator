@@ -8,11 +8,12 @@ public class VertexGameObject : MonoBehaviour
 {
     [SerializeField] private CircleCollider2D _circleCollider;
     [SerializeField] private Color _color = Color.white;
+    [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] GameObject _addButton;
 
     public bool _isSelected = false;
+    public Vertex _vertex;
 
-    private Vertex _vertex;
     private Vector3 _offset;
     private AddButton _addButtonScript;
 
@@ -41,19 +42,33 @@ public class VertexGameObject : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        if (_addButtonScript.IsActive) return;
+        if (_addButtonScript.IsActive)
+        {
+            return;
+        }
+
         _isSelected = true;
+        _addButton.SetActive(true);
+        _spriteRenderer.color = _color.Darker(0.2f);
     }
 
     private void OnMouseExit()
     {
-        if (_addButtonScript.IsActive) return;
+        if (_addButtonScript.IsActive)
+        {
+            return;
+        }
+
         _isSelected = false;
+        _addButton.SetActive(false);
+        _spriteRenderer.color = _color;
     }
+
 
     private void OnMouseDrag()
     {
-        if(!_addButtonScript.IsActive) gameObject.transform.position = ZeroZ(GetMousePos()) + _offset;
+        Debug.Log(_addButtonScript.IsActive);
+        if(true/*!_addButtonScript.IsActive*/) gameObject.transform.position = ZeroZ(GetMousePos()) + _offset;
     }
 
     private Vector3 GetMousePos()

@@ -31,14 +31,16 @@ public class AddButton : MonoBehaviour
     private void OnMouseEnter()
     {
         IsActive = true;
+        Debug.Log("onmouseenter");
 
-        var spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.color = _color.Darker(0.2f);
+        //var spriteRenderer = GetComponent<SpriteRenderer>();
+        //spriteRenderer.color = _color.Darker(0.2f);
     }
 
     private void OnMouseExit()
     {
         IsActive = false;
+        Debug.Log("onmouse leave");
 
         var spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.color = _color;
