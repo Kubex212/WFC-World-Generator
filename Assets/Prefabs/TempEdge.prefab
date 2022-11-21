@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8303157264381410063
+--- !u!1 &7017790113067583704
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,24 +8,23 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3631313041997219380}
-  - component: {fileID: 5047657068635789969}
-  - component: {fileID: 2766938784412797876}
-  - component: {fileID: 1844062398207563915}
+  - component: {fileID: 5319113095600223501}
+  - component: {fileID: -6495864445847643928}
+  - component: {fileID: -6109771681136929907}
   m_Layer: 0
-  m_Name: Edge
+  m_Name: TempEdge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3631313041997219380
+--- !u!4 &5319113095600223501
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8303157264381410063}
+  m_GameObject: {fileID: 7017790113067583704}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -34,34 +33,29 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5047657068635789969
+--- !u!114 &-6495864445847643928
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8303157264381410063}
+  m_GameObject: {fileID: 7017790113067583704}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f0d75136ed8eef45ac5e55308c1980e, type: 3}
+  m_Script: {fileID: 11500000, guid: b1fdb27f27aabb648a038de336e2dc08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _lineRenderer: {fileID: 2766938784412797876}
-  _meshCollider: {fileID: 1844062398207563915}
-  _baseColor: {r: 0.7924528, g: 0.03364185, b: 0.03364185, a: 1}
-  _colorWithKey: {r: 0.98564017, g: 1, b: 0, a: 1}
-  _graphRenderer: {fileID: 0}
-  _thickness: 0.149
-  from: {fileID: 0}
-  to: {fileID: 0}
-  isSelected: 0
---- !u!120 &2766938784412797876
+  _lineRenderer: {fileID: -6109771681136929907}
+  _color: {r: 0.745283, g: 0.045701336, b: 0.045701336, a: 1}
+  _thickness: 0.1
+  _from: {fileID: 0}
+--- !u!120 &-6109771681136929907
 LineRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8303157264381410063}
+  m_GameObject: {fileID: 7017790113067583704}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -154,17 +148,3 @@ LineRenderer:
     generateLightingData: 0
   m_UseWorldSpace: 1
   m_Loop: 0
---- !u!64 &1844062398207563915
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8303157264381410063}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}

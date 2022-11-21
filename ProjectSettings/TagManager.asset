@@ -38,6 +38,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Edges
+    uniqueID: 2525296939
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
