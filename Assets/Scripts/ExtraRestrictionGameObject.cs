@@ -18,6 +18,7 @@ public class ExtraRestrictionGameObject : MonoBehaviour
     void Start()
     {
         _originalPosition = transform.position;
+        _spriteRenderer.size = new Vector2(1f, 1f);
     }
 
     void Update()
@@ -40,7 +41,7 @@ public class ExtraRestrictionGameObject : MonoBehaviour
         if(Target == Target.Vertex)
         {
             var vertices = FindObjectsOfType<VertexGameObject>();
-            var selectedVertex = vertices.Where(v => v._isSelected).FirstOrDefault();
+            var selectedVertex = vertices.Where(v => v.isSelected).FirstOrDefault();
             if(selectedVertex != null)
             {
                 _graphRenderer.SetVertexRestriction(selectedVertex, restrictionType);
@@ -85,7 +86,8 @@ public enum RestrictionType
     Key,
     Lock,
     Start,
-    End
+    End,
+    None
 }
 
 public enum Target

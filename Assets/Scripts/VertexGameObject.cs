@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Graphs;
+using TMPro;
 
 public class VertexGameObject : MonoBehaviour
 {
     [SerializeField] private CircleCollider2D _circleCollider;
     [SerializeField] private Color _color = Color.white;
+    [SerializeField] private Color _baseColor = Color.white;
     [SerializeField] private SpriteRenderer _spriteRenderer;
+    [SerializeField] private TextMeshPro _keyText;
 
-    public bool _isSelected = false;
-    public Vertex _vertex;
+    public bool isSelected = false;
+    public Vertex vertex;
 
     private Vector3 _offset;
 
@@ -32,14 +35,15 @@ public class VertexGameObject : MonoBehaviour
             if (hit.collider.gameObject == this.gameObject)
             {
                 Debug.Log("entered");
-                _isSelected = true;
+                isSelected = true;
                 _spriteRenderer.color = _color.Darker(0.2f);
                 return;
             }
         }
-        _isSelected = false;
+        isSelected = false;
         _spriteRenderer.color = _color;
-        return;
+
+        _keyText.text = vertex.Key.ToString();
     }
 
     public void SetRestrictionInternal(RestrictionType type)
@@ -57,6 +61,16 @@ public class VertexGameObject : MonoBehaviour
         {
             // add key
         }
+        else if(type == RestrictionType.None)
+        {
+            _color = _baseColor;
+        }
+    }
+
+    public Color SetColor(float darker = 0f)
+    {
+        var c = _baseColor;
+        return _spriteRenderer.color = c.Darker(darker);
     }
 
     private void OnMouseEnter()

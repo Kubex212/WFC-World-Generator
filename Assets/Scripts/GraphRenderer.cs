@@ -4,14 +4,21 @@ using System.Linq;
 using UnityEngine;
 using Graphs;
 using UnityEngine.UI;
+using UnityEditor;
+using System.IO;
+using UnityEngine.Events;
 
 public class GraphRenderer : MonoBehaviour
 {
     [SerializeField] private GameObject _vertexPrefab;
     [SerializeField] private GameObject _edgePrefab;
     [SerializeField] private GameObject _tempEdgePrefab;
-    [SerializeField] private Button _addVertexButton; 
+    [SerializeField] private Button _addVertexButton;
+    [SerializeField] private Button _saveButton;
+    [SerializeField] private Button _loadButton;
 
+    public UnityEvent<VertexGameObject> onDeleteVertex;
+    public UnityEvent<EdgeGameObject> onDeleteEdge;
     public VertexGameObject selectedVertex = null;
 
     private TempEdgeGameObject _tempEdge = null;
@@ -23,22 +30,15 @@ public class GraphRenderer : MonoBehaviour
     void Start()
     {
         _addVertexButton.onClick.AddListener(OnAdd);
+        _saveButton.onClick.AddListener(Save);
+        _loadButton.onClick.AddListener(Load);
 
         Graph = new UndirectedGraph();
         var v0 = Graph.AddVertex("v0");
         var v1 = Graph.AddVertex("v1");
         Graph.AddEdge(v0, v1);
 
-        foreach (var v in Graph.Vertices)
-        {
-            if (true) // nie pamietam co tu mialo byc - pewnie nic
-            {
-                var vertex = Instantiate(_vertexPrefab);
-                vertex.GetComponent<VertexGameObject>()._vertex = v;
-            }
-        }
-
-        _vertices = new List<VertexGameObject>(FindObjectsOfType<VertexGameObject>());
+        SpawnVertices();
         SpawnEdges();
     }
 
@@ -47,7 +47,7 @@ public class GraphRenderer : MonoBehaviour
     {
         if(Input.GetMouseButtonDown(1))
         {
-            selectedVertex = _vertices.Where(v => v._isSelected).FirstOrDefault();
+            selectedVertex = _vertices.Where(v => v.isSelected).FirstOrDefault();
             if(selectedVertex != null)
             {
                 Debug.Log("started creating an edge...");
@@ -58,12 +58,12 @@ public class GraphRenderer : MonoBehaviour
         else if(Input.GetMouseButtonUp(1))
         {
             Destroy(_tempEdge.gameObject);
-            var targetVertex = _vertices.Where(v => v._isSelected).FirstOrDefault();
+            var targetVertex = _vertices.Where(v => v.isSelected).FirstOrDefault();
             if(selectedVertex != null && targetVertex != null && selectedVertex != targetVertex)
             {
                 // add edge
                 Debug.Log("add edge");
-                AddEdgeGO(selectedVertex._vertex, targetVertex._vertex);
+                AddEdgeGO(selectedVertex.vertex, targetVertex.vertex);
             }
             else
             {
@@ -76,40 +76,43 @@ public class GraphRenderer : MonoBehaviour
             SpawnEdges();
         }
 
-        if(Input.GetKeyDown(KeyCode.Delete) && selectedVertex != null)
+        var hoveredVertex = _vertices.Where(v => v.isSelected).FirstOrDefault();
+        if (Input.GetKeyDown(KeyCode.Delete) && hoveredVertex != null)
         {
-            if (!Graph.DeleteVertex(selectedVertex._vertex)) Debug.LogError("[GRAPH] delete vertex returned false");
+            DestroyVertex(hoveredVertex);
         }
 
+        _edges = FindObjectsOfType<EdgeGameObject>().ToList();
     }
 
-    public void SetVertexRestriction(VertexGameObject vertex, RestrictionType type)
+    public void SetVertexRestriction(VertexGameObject vertexGO, RestrictionType type)
     {
         if (type == RestrictionType.Start)
         {
             foreach (var v in _vertices)
             {
-                v._vertex.IsStart = false;
+                v.vertex.IsStart = false;
+                v.SetRestrictionInternal(RestrictionType.None);
             }
 
-            vertex._vertex.IsStart = true;
-            vertex.SetRestrictionInternal(type);
+            vertexGO.vertex.IsStart = true;
+            vertexGO.SetRestrictionInternal(type);
         }
         else if (type == RestrictionType.End)
         {
             foreach (var v in _vertices)
             {
-                v._vertex.IsExit = false;
+                v.vertex.IsExit = false;
             }
 
-            vertex._vertex.IsExit = true;
-            vertex.SetRestrictionInternal(type);
+            vertexGO.vertex.IsExit = true;
+            vertexGO.SetRestrictionInternal(type);
         }
         else if (type == RestrictionType.Key)
         {
             // add key
-
-            vertex.SetRestrictionInternal(type);
+            vertexGO.vertex.SetKey(Graph.LowestAvailableKey);
+            vertexGO.SetRestrictionInternal(type);
         }
     }
 
@@ -121,14 +124,77 @@ public class GraphRenderer : MonoBehaviour
         }
     }
 
-    public void OnAdd()
+    private void OnAdd()
     {
         var newVertex = Graph.AddVertex();
         var vertexGO = Instantiate(original: _vertexPrefab);
-        vertexGO.GetComponent<VertexGameObject>()._vertex = newVertex;
+        vertexGO.GetComponent<VertexGameObject>().vertex = newVertex;
         _vertices = new List<VertexGameObject>(FindObjectsOfType<VertexGameObject>());
     }
 
+    private void Save()
+    {
+        var positions = new Dictionary<Vertex, (float X, float Y)>();
+
+        for(int i = 0; i < Graph.Vertices.Count; i++)
+        {
+            var vertex = Graph.Vertices[i];
+            var correspondingVertexGO = _vertices.Where(v => v.vertex.Name == vertex.Name).FirstOrDefault();
+            if(correspondingVertexGO == null)
+            {
+                Debug.LogError("[SAVE] could not find a corresponding vertex game object");
+            }
+            (float x, float y) pos = (correspondingVertexGO.transform.position.x, correspondingVertexGO.transform.position.y);
+            positions.Add(vertex, pos);
+            //Graph.Vertices[i] = new Vertex(vertex.Name) { IsExit = vertex.IsExit, IsStart = vertex.IsStart, Key = vertex.Key, Position = pos };
+        }
+
+        var json = Graph.Serialize(positions);
+
+        var path = EditorUtility.SaveFilePanel(
+          "Save",
+          "",
+          "g" + ".json",
+          "json");
+
+        if (path.Length != 0)
+        {
+            File.WriteAllText(path, json);
+        }
+
+    }
+
+    private void Load()
+    {
+        Clear();
+
+        string path = EditorUtility.OpenFilePanel("Overwrite with png", "", "json");
+        if (path.Length != 0)
+        {
+            var json = File.ReadAllText(path);
+            Graph.Deserialize(json, out Dictionary<Vertex, (float X, float Y)> positions);
+
+            SpawnVertices(positions);
+            SpawnEdges();
+        }
+    }
+
+    private void Clear()
+    {
+        foreach(var v in _vertices)
+        {
+            Destroy(v.gameObject);
+        }
+        _vertices.Clear();
+
+        foreach(var e in _edges)
+        {
+            Destroy(e.gameObject);
+        }
+        _edges.Clear();
+
+        Graph = new UndirectedGraph();
+    }
     private void AddEdgeGO(Vertex v1, Vertex v2)
     {
         Graph.AddEdge(v1, v2);
@@ -148,7 +214,7 @@ public class GraphRenderer : MonoBehaviour
         foreach(var pair in Graph.Edges)
         {
             var sourceVertex = pair.Key;
-            var sourceVertexGO = _vertices.Where(v => v._vertex == sourceVertex).First().gameObject;
+            var sourceVertexGO = _vertices.Where(v => v.vertex == sourceVertex).First();
             var neighbors = pair.Value;
 
             foreach(var edgePair in neighbors)
@@ -162,7 +228,7 @@ public class GraphRenderer : MonoBehaviour
 
                 // get target vertex
                 var targetVertex = edgePair.Key;
-                var targetVertexGO = _vertices.Where(v => v._vertex == targetVertex).First().gameObject;
+                var targetVertexGO = _vertices.Where(v => v.vertex == targetVertex).First();
 
                 // spawn edge and set its properties
                 var edgeGO = Instantiate(original: _edgePrefab);
@@ -178,5 +244,44 @@ public class GraphRenderer : MonoBehaviour
         }
 
         _edges = FindObjectsOfType<EdgeGameObject>().ToList(); // this is probably not necessary
+    }
+
+    private void SpawnVertices(Dictionary<Vertex, (float X, float Y)> positions = null)
+    {
+        foreach (var v in Graph.Vertices)
+        {
+            var vertex = Instantiate(_vertexPrefab);
+            var vertexGO = vertex.GetComponent<VertexGameObject>();
+            vertexGO.vertex = v;
+            if(positions != null)
+            {
+                vertexGO.transform.position = new Vector3(positions[vertexGO.vertex].X, positions[vertexGO.vertex].Y, 0);
+            }
+        }
+        _vertices = new List<VertexGameObject>(FindObjectsOfType<VertexGameObject>());
+    }
+
+    private void DestroyVertex(VertexGameObject vertexToDestroy)
+    {
+        // delete its edges
+        var edgesToDestroy = _edges.Where(e => e.from == vertexToDestroy || e.to == vertexToDestroy).ToList();
+        foreach(var e in edgesToDestroy)
+        {
+            DestroyEdge(e);
+        }
+
+        // delete the vertex from the graph
+        var deleted = Graph.DeleteVertex(vertexToDestroy.vertex);
+        if(!deleted) Debug.LogError("[GRAPH] delete vertex returned false");
+
+        // delete the vertex game object
+        Destroy(vertexToDestroy.gameObject);
+    }
+
+    private void DestroyEdge(EdgeGameObject edgeToDestroy)
+    {
+        _edges.Remove(edgeToDestroy);
+        Graph.DeleteEdge(edgeToDestroy.from.vertex, edgeToDestroy.to.vertex);
+        Destroy(edgeToDestroy.gameObject);
     }
 }
