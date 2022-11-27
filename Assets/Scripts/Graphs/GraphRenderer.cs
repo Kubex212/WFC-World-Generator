@@ -47,7 +47,7 @@ public class GraphRenderer : MonoBehaviour
     {
         if(Input.GetMouseButtonDown(1))
         {
-            selectedVertex = _vertices.Where(v => v.isSelected).FirstOrDefault();
+            selectedVertex = _vertices.Where(v => v != null && v.isSelected).FirstOrDefault();
             if(selectedVertex != null)
             {
                 Debug.Log("started creating an edge...");
@@ -57,7 +57,7 @@ public class GraphRenderer : MonoBehaviour
         }
         else if(Input.GetMouseButtonUp(1))
         {
-            Destroy(_tempEdge.gameObject);
+            if(_tempEdge?.gameObject != null) Destroy(_tempEdge.gameObject);
             var targetVertex = _vertices.Where(v => v.isSelected).FirstOrDefault();
             if(selectedVertex != null && targetVertex != null && selectedVertex != targetVertex)
             {
@@ -77,9 +77,14 @@ public class GraphRenderer : MonoBehaviour
         }
 
         var hoveredVertex = _vertices.Where(v => v.isSelected).FirstOrDefault();
+        var hoveredEdge = _edges.Where(e => e.isSelected).FirstOrDefault();
         if (Input.GetKeyDown(KeyCode.Delete) && hoveredVertex != null)
         {
             DestroyVertex(hoveredVertex);
+        }
+        else if(Input.GetKeyDown(KeyCode.Delete) && hoveredEdge != null)
+        {
+            DestroyEdge(hoveredEdge);
         }
 
         _edges = FindObjectsOfType<EdgeGameObject>().ToList();
@@ -89,6 +94,8 @@ public class GraphRenderer : MonoBehaviour
     {
         if (type == RestrictionType.Start)
         {
+            if (vertexGO.vertex.IsStart) return;
+
             foreach (var v in _vertices)
             {
                 v.vertex.IsStart = false;
@@ -100,6 +107,8 @@ public class GraphRenderer : MonoBehaviour
         }
         else if (type == RestrictionType.End)
         {
+            if (vertexGO.vertex.IsExit) return;
+
             foreach (var v in _vertices)
             {
                 v.vertex.IsExit = false;
@@ -110,17 +119,18 @@ public class GraphRenderer : MonoBehaviour
         }
         else if (type == RestrictionType.Key)
         {
+            if (vertexGO.vertex.Key != null) return;
             // add key
-            vertexGO.vertex.SetKey(Graph.LowestAvailableKey);
+            vertexGO.vertex.SetKey(Graph.LowestVertexAvailableKey);
             vertexGO.SetRestrictionInternal(type);
         }
     }
 
     public void SetEdgeRestriction(EdgeGameObject edge, RestrictionType type)
     {
-        if(type == RestrictionType.Lock)
+        if(type == RestrictionType.Lock && edge.edge.Key == null)
         {
-            edge.SetRestrictionInternal(Graph.LowestAvailableKey, type);
+            edge.SetRestrictionInternal(Graph.LowestEdgeAvailableKey, type);
         }
     }
 
@@ -134,7 +144,7 @@ public class GraphRenderer : MonoBehaviour
 
     private void Save()
     {
-        var positions = new Dictionary<Vertex, (float X, float Y)>();
+        var positions = new Dictionary<string, (float X, float Y)>();
 
         for(int i = 0; i < Graph.Vertices.Count; i++)
         {
@@ -145,7 +155,7 @@ public class GraphRenderer : MonoBehaviour
                 Debug.LogError("[SAVE] could not find a corresponding vertex game object");
             }
             (float x, float y) pos = (correspondingVertexGO.transform.position.x, correspondingVertexGO.transform.position.y);
-            positions.Add(vertex, pos);
+            positions.Add(vertex.ToString(), pos);
             //Graph.Vertices[i] = new Vertex(vertex.Name) { IsExit = vertex.IsExit, IsStart = vertex.IsStart, Key = vertex.Key, Position = pos };
         }
 
@@ -172,7 +182,7 @@ public class GraphRenderer : MonoBehaviour
         if (path.Length != 0)
         {
             var json = File.ReadAllText(path);
-            Graph.Deserialize(json, out Dictionary<Vertex, (float X, float Y)> positions);
+            Graph.Deserialize(json, out Dictionary<string, (float X, float Y)> positions);
 
             SpawnVertices(positions);
             SpawnEdges();
@@ -228,7 +238,7 @@ public class GraphRenderer : MonoBehaviour
 
                 // get target vertex
                 var targetVertex = edgePair.Key;
-                var targetVertexGO = _vertices.Where(v => v.vertex == targetVertex).First();
+                var targetVertexGO = _vertices.Where(v => v.vertex.Name == targetVertex.Name).First();
 
                 // spawn edge and set its properties
                 var edgeGO = Instantiate(original: _edgePrefab);
@@ -246,7 +256,7 @@ public class GraphRenderer : MonoBehaviour
         _edges = FindObjectsOfType<EdgeGameObject>().ToList(); // this is probably not necessary
     }
 
-    private void SpawnVertices(Dictionary<Vertex, (float X, float Y)> positions = null)
+    private void SpawnVertices(Dictionary<string, (float X, float Y)> positions = null)
     {
         foreach (var v in Graph.Vertices)
         {
@@ -255,8 +265,9 @@ public class GraphRenderer : MonoBehaviour
             vertexGO.vertex = v;
             if(positions != null)
             {
-                vertexGO.transform.position = new Vector3(positions[vertexGO.vertex].X, positions[vertexGO.vertex].Y, 0);
+                vertexGO.transform.position = new Vector3(positions[vertexGO.vertex.ToString()].X, positions[vertexGO.vertex.ToString()].Y, 0);
             }
+            vertexGO.SetColor();
         }
         _vertices = new List<VertexGameObject>(FindObjectsOfType<VertexGameObject>());
     }

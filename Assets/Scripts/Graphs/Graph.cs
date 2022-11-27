@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Newtonsoft.Json;
+using System;
 
 namespace Graphs
 {
@@ -10,7 +11,8 @@ namespace Graphs
     {
         public Dictionary<Vertex, Dictionary<Vertex, Edge>> Edges { get; private set; } = new Dictionary<Vertex, Dictionary<Vertex, Edge>>();
         public List<Vertex> Vertices { get => Edges.Keys.ToList(); }
-        public int LowestAvailableKey { get => Vertices.Where(v => v.Key != null).Select(v => v.Key.Value).DefaultIfEmpty().Max() + 1; }
+        public int LowestVertexAvailableKey { get => Vertices.Where(v => v.Key != null).Select(v => v.Key.Value).DefaultIfEmpty().Max() + 1; }
+        public int LowestEdgeAvailableKey { get => EdgeList.Where(v => v.Key != null).Select(v => v.Key.Value).DefaultIfEmpty().Max() + 1; }        
 
         public List<Edge> EdgeList
         {
@@ -95,12 +97,12 @@ namespace Graphs
 
                 for (int i = 0; i < Vertices.Count; i++)
                 {
-                    if (Vertices[i].Key != null) Vertices[i].SetKey(Vertices[i].Key - 1);
+                    if (Vertices[i].Key != null && Vertices[i].Key.Value > key.Value) Vertices[i].SetKey(Vertices[i].Key - 1);
                 }
 
                 for (int i = 0; i < EdgeList.Count; i++)
                 {
-                    if (EdgeList[i].Key != null) EdgeList[i].Key--;
+                    if (EdgeList[i].Key != null && EdgeList[i].Key.Value > key.Value) EdgeList[i].Key--;
                 }
                 return true;
             }
@@ -111,13 +113,13 @@ namespace Graphs
             }
         }
 
-        public string Serialize(Dictionary<Vertex, (float X, float Y)> positions = null)
+        public string Serialize(Dictionary<string, (float X, float Y)> positions = null)
         {
             var exportObject = new ExportObject() { Edges = Edges, Positions = positions };
             return JsonConvert.SerializeObject(exportObject, Formatting.Indented, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.Objects });
         }
 
-        public void Deserialize(string json, out Dictionary<Vertex, (float X, float Y)> positions)
+        public void Deserialize(string json, out Dictionary<string, (float X, float Y)> positions)
         {
             var importedObject = JsonConvert.DeserializeObject<ExportObject>(json);
             Edges = importedObject.Edges;
@@ -135,7 +137,7 @@ namespace Graphs
 
         public Vertex(string name)
         {
-            Name = name ?? $"{Count++}";
+            Name = name ?? Guid.NewGuid().ToString();
             IsStart = false;
             IsExit = false;
             Key = null;
@@ -146,15 +148,17 @@ namespace Graphs
             Key = key;
         }
 
-        public static bool operator ==(Vertex left, Vertex right)
-        {
-            return left.Name == right.Name;
-        }
+        //public static bool operator ==(Vertex left, Vertex right)
+        //{
+        //    //if (left == null || right == null) return false;
+        //    return left.Name == right.Name;
+        //}
 
-        public static bool operator !=(Vertex left, Vertex right)
-        {
-            return left.Name != right.Name;
-        }
+        //public static bool operator !=(Vertex left, Vertex right)
+        //{
+        //    if (left == null || right == null) return false;
+        //    return left.Name != right.Name;
+        //}
 
         public override bool Equals(object obj)
         {
@@ -176,7 +180,9 @@ namespace Graphs
             var split = s.Split('|');
             var isStart = bool.Parse(split[1]);
             var isExit = bool.Parse(split[2]);
-            return new Vertex(split[0]) { IsStart = isStart, IsExit = isExit };
+            var keyExists = int.TryParse(split[3], out int result);
+            int? key = keyExists ? result : null;
+            return new Vertex(split[0]) { IsStart = isStart, IsExit = isExit, Key = key };
         }
     }
 
@@ -189,7 +195,7 @@ namespace Graphs
     public class ExportObject
     {
         public Dictionary<Vertex, Dictionary<Vertex, Edge>> Edges { get; set; }
-        public Dictionary<Vertex, (float X, float Y)> Positions { get; set; }
+        public Dictionary<string, (float X, float Y)> Positions { get; set; }
     }
 }
 

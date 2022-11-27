@@ -23,6 +23,7 @@ public class VertexGameObject : MonoBehaviour
     {
         _circleCollider = GetComponent<CircleCollider2D>();
         _color = Color.white;
+        SetColor();
     }
 
     void Update()
@@ -36,14 +37,15 @@ public class VertexGameObject : MonoBehaviour
             {
                 Debug.Log("entered");
                 isSelected = true;
-                _spriteRenderer.color = _color.Darker(0.2f);
+                SetColor(0.2f);
                 return;
             }
         }
         isSelected = false;
-        _spriteRenderer.color = _color;
+        SetColor();
 
         _keyText.text = vertex.Key.ToString();
+
     }
 
     public void SetRestrictionInternal(RestrictionType type)
@@ -65,11 +67,14 @@ public class VertexGameObject : MonoBehaviour
         {
             _color = _baseColor;
         }
+        SetColor();
     }
 
     public Color SetColor(float darker = 0f)
     {
-        var c = _baseColor;
+        var c = _color;
+        if(vertex.IsStart) c = Color.green;
+        else if(vertex.IsExit) c = Color.red;
         return _spriteRenderer.color = c.Darker(darker);
     }
 
