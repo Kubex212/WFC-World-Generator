@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+// Q: AddEdgeButton?
 public class AddButton : MonoBehaviour
 {
     [SerializeField] private Color _color = Color.green;
@@ -79,6 +79,7 @@ public class AddButton : MonoBehaviour
         return Camera.main.ScreenToWorldPoint(mousePos);
     }
 
+    // Q: obsolete with Utility.cs
     private Vector3 ZeroZ(Vector3 v)
     {
         return new Vector3(v.x, v.y, 0);
