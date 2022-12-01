@@ -19,7 +19,8 @@ namespace Tiles
         }
         public void AddNeighbor(Tile neighbor, Direction direction)
         {
-            Neighbors[(int)(direction)].Add(neighbor);
+            if (!Neighbors[(int)(direction)].Contains(neighbor))
+                Neighbors[(int)(direction)].Add(neighbor);
         }
         public void RemoveNeighbor(Tile neighbor, Direction direction)
         {

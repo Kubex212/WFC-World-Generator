@@ -11,7 +11,7 @@ using System.IO;
 public class TileCollectionRenderer : MonoBehaviour
 {
     [SerializeField] private GameObject _tilePrefab;
-    [SerializeField] private GameObject _tilesPanel;
+    public GameObject _tilesPanel;
 
     public Dictionary<Tile, TileGameObject> tileObjects = new Dictionary<Tile, TileGameObject>();
     public List<Tile> tiles { get => tileObjects.Keys.ToList(); }
@@ -28,20 +28,28 @@ public class TileCollectionRenderer : MonoBehaviour
     {
         _addTileButton.onClick.AddListener(OnAdd);
     }
+    private void OnRectTransformDimensionsChange()
+    {
+        foreach (TileGameObject obj in tileObjects.Values)
+        {
+            obj.ResetPosition();
+        }
+    }
 
     public void OnAdd()
     {
         var newTile = new Tile();
         var imageFile = EditorUtility.OpenFilePanelWithFilters("Select new tile image.", "", new[]{ "Image files", "png,jpg,jpeg" });
-        if(!File.Exists(imageFile))
+        if (!File.Exists(imageFile))
         {
             Debug.LogError("Chosen file does not exist");
             return;
         }
-        var tileGO = Instantiate(original: _tilePrefab);
-
+        var tileGO = Instantiate(original: _tilePrefab, parent: transform);
+        
         tileGO.GetComponent<TileGameObject>().tile = newTile;
         tileGO.GetComponent<TileGameObject>().LoadImage(imageFile);
         tileObjects[newTile] = tileGO.GetComponent<TileGameObject>();
     }
+
 }
