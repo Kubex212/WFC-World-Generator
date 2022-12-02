@@ -23,7 +23,12 @@ public class WaveFunctionCollapse
 
         for (int x = 0; x < _board.GetLength(0); x++)
             for (int y = 0; y < _board.GetLength(1); y++)
+            {
                 _board[x, y] = new HashSet<int>();
+                for (int i = 0; i < tiles.Count; i++)
+                    _board[x, y].Add(i);
+
+            }
         for(int i = 0; i<tiles.Count; i++)
         {
             _neighborhoods.Add(new List<(Vector2Int, int)>());
@@ -54,7 +59,7 @@ public class WaveFunctionCollapse
         states.RemoveAt(pickedState);
         _modified.Add(cell, states);
 
-        var s = new Stack<(Vector2Int, int)>();
+        var s = new Stack<(Vector2Int cell, int tile)>();
         foreach (var tile in states) // begin by excluding all tiles not chosen during collapse
             s.Push((cell, tile));
 
@@ -64,9 +69,18 @@ public class WaveFunctionCollapse
             var neighbors = GetNeighbors(point);
             foreach ((Vector2Int cell, int tile) n in neighbors) // loop through all possible neighboring tiles
             {
-                if (_board[n.cell.x, n.cell.y].Contains(n.tile)) // if tile not excluded yet, visit and exclude
+                if (_board[n.cell.x, n.cell.y].Contains(n.tile)) // if tile not excluded yet, visit
                 {
-                    _board[n.cell.x,n.cell.y].Remove(n.tile);
+                    var nneighbors = GetNeighbors(n);
+                    if (nneighbors.Any( // if tile is still supported by anything else, skip
+                        ((Vector2Int cell, int tile) p)
+                            => p.cell==point.cell &&
+                            _board[p.cell.x,p.cell.y].Contains(p.tile)
+                            )
+                        ) 
+                        continue;
+
+                    _board[n.cell.x,n.cell.y].Remove(n.tile); // exclude tile if not suported by anything anymore
                     if (!_modified.ContainsKey(n.cell))
                         _modified.Add(n.cell, new List<int>());
                     _modified[n.cell].Add(n.tile);
@@ -74,6 +88,8 @@ public class WaveFunctionCollapse
                 }
             }
         }
+        _history.Push(_modified);
+        _modified = new Dictionary<Vector2Int, List<int>>();
         _queue.Notify();
         return state;
     }
@@ -151,7 +167,7 @@ public class WaveFunctionCollapse
         {
             if (_boardModified)
             {
-                _list.Sort((v1, v2) => _board[v1.x, v1.y].Count - _board[v2.x, v2.y].Count);
+                _list.Sort((v1, v2) => _board[v2.x, v2.y].Count - _board[v1.x, v1.y].Count);
                 _boardModified = false;
             }
             var v = _list[_list.Count - 1];

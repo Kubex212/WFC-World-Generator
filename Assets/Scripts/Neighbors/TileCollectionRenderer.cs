@@ -36,6 +36,7 @@ public class TileCollectionRenderer : MonoBehaviour
         _addTileButton.onClick.AddListener(AddButton);
         _saveButton.onClick.AddListener(Save);
         _loadButton.onClick.AddListener(Load);
+        FindObjectOfType<DataHolder>().tiles = _tileCollection.tiles;
     }
     private void OnRectTransformDimensionsChange()
     {
@@ -83,9 +84,9 @@ public class TileCollectionRenderer : MonoBehaviour
 
         var jsonPath = Path.Combine(imgPath, Path.ChangeExtension(Path.GetFileName(zipPath), ".json"));
 
-        for (int i = 0; i < _tileCollection.Tiles.Count; i++)
+        for (int i = 0; i < _tileCollection.tiles.Count; i++)
         {
-            var tile = _tileCollection.Tiles[i];
+            var tile = _tileCollection.tiles[i];
             var correspondingTileGO = tileObjects[tile];
             string pic = Path.GetFileName(correspondingTileGO.imagePath);
 
@@ -122,13 +123,14 @@ public class TileCollectionRenderer : MonoBehaviour
 
         var json = File.ReadAllText(jsonPath);
         _tileCollection.Deserialize(json);
-        Tile.Load(_tileCollection.Tiles.Count);
+        FindObjectOfType<DataHolder>().tiles = _tileCollection.tiles;
+        Tile.Load(_tileCollection.tiles.Count);
         SpawnTiles(imgPath);
     }
 
     private void SpawnTiles(string pictures)
     {
-        foreach (var tile in _tileCollection.Tiles)
+        foreach (var tile in _tileCollection.tiles)
         {
             AddTileObject(tile, Path.Combine(pictures,tile.ToString()));
         }

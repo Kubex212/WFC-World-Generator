@@ -26,7 +26,7 @@ public class WFCGameObject : MonoBehaviour
     private void Next()
     {
         if (_algorithm == null)
-            _algorithm = new WaveFunctionCollapse(3, 3, FindObjectOfType<DataHolder>().tileCollection);
+            _algorithm = new WaveFunctionCollapse(3, 3, FindObjectOfType<DataHolder>().tiles);
         _algorithm.Next();
         // ...
     }
