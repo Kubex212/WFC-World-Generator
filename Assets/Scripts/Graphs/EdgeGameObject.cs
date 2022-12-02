@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Graphs;
+using TMPro;
 
 public class EdgeGameObject : MonoBehaviour
 {
@@ -11,11 +12,12 @@ public class EdgeGameObject : MonoBehaviour
     [SerializeField] private Color _baseColor;
     [SerializeField] private Color _colorWithKey;
     [SerializeField] private GraphRenderer _graphRenderer;
+    [SerializeField] private TextMeshPro _keyText;
     [Range(0.01f, 0.5f)]
     [SerializeField] private float _thickness;
 
-    public GameObject from;
-    public GameObject to;
+    public VertexGameObject from;
+    public VertexGameObject to;
     public Edge edge;
     public bool isSelected; 
 
@@ -42,6 +44,9 @@ public class EdgeGameObject : MonoBehaviour
         {
             _meshCollider.sharedMesh = mesh;
         }
+
+        _keyText.transform.position = Vector3.Lerp(from.transform.position, to.transform.position, 0.5f);
+        _keyText.text = edge.Key?.ToString();
     }
 
     public void SetRestrictionInternal(int keyNumber, RestrictionType type)

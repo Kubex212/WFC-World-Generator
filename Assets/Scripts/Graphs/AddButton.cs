@@ -17,7 +17,7 @@ public class AddButton : MonoBehaviour
 
     void Update()
     {
-        if(_parent.GetComponent<VertexGameObject>()._isSelected)
+        if(_parent.GetComponent<VertexGameObject>().isSelected)
         {
             gameObject.SetActive(true);
         }
