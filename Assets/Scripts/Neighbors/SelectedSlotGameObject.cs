@@ -13,7 +13,7 @@ public class SelectedSlotGameObject : TileSlot
         set
         {
             _selected = value;
-            GetComponent<Image>().sprite =
+            GetComponent<Image>().sprite = value==null?null:
                 FindObjectOfType<TileCollectionRenderer>()
                 .tileObjects[value]
                 .GetComponent<Image>()

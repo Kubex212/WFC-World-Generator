@@ -10,11 +10,10 @@ using UnityEngine.UI;
 
 public class TileGameObject : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler, IPointerDownHandler
 {
-    [SerializeField] private string _imagePath = "";
-    public int Index { get; private set; }
-    private static int _nextIndex = 0;
+    public string imagePath = "";
+    public int Index { get => tile.Index; }
 
-    private static float _tileSpacing = 15;
+    public static float _tileSpacing = 0.5f;
 
     public Tile tile;
 
@@ -46,6 +45,7 @@ public class TileGameObject : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private Vector3 _offset;
     public void LoadImage(string path)
     {
+        imagePath = path;
         var tex = new Texture2D(2, 2);
         byte[] data = File.ReadAllBytes(path);
         ImageConversion.LoadImage(tex, data);
@@ -53,20 +53,27 @@ public class TileGameObject : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     }
     public void OnPointerUp(PointerEventData _)
     {
-        var neighborSlots = FindObjectsOfType<TileSlot>();
+        var allSlots = FindObjectsOfType<TileSlot>();
+        var neighborSlots = FindObjectsOfType<NeighborSlotGameObject>();
         var selectedSlot = FindObjectOfType<SelectedSlotGameObject>();
-        var slot = neighborSlots.Where(v => v.IsHovered).FirstOrDefault();
+        var slot = allSlots.Where(v => v.IsHovered).FirstOrDefault();
 
         var neighborSlot = slot as NeighborSlotGameObject;
         if (slot is NeighborSlotGameObject)
         {
             selectedSlot.Selected.AddNeighbor(tile, neighborSlot.direction);
-            tile.AddNeighbor(selectedSlot.Selected, neighborSlot.direction);
+            tile.AddNeighbor(selectedSlot.Selected, neighborSlot.direction.Opposite());
+            neighborSlot.ShowNeighbors(selectedSlot.Selected);
+            if (tile == selectedSlot.Selected)
+                neighborSlots.FirstOrDefault((s) => s.direction == neighborSlot.direction.Opposite())
+                    .ShowNeighbors(tile);
             Debug.Log($"dodano {tile} jako s¹siada w kierunku {neighborSlot.direction} od kafelka {selectedSlot.Selected}");
         }
         else if (slot == selectedSlot)
         {
             selectedSlot.Selected = tile;
+            foreach (var s in neighborSlots)
+                s.ShowNeighbors(selectedSlot.Selected);
             Debug.Log($"wybrano {tile} do edycji s¹siedztwa");
         }
 
@@ -89,7 +96,6 @@ public class TileGameObject : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     void Start()
     {
-        Index = _nextIndex++;
         ResetPosition();
     }
     void Update()
@@ -100,12 +106,13 @@ public class TileGameObject : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     public void ResetPosition()
     {
         var rect = transform.parent.GetComponent<RectTransform>().rect;
-        float w = rect.width - _tileSpacing;
-        float d = GetComponent<RectTransform>().rect.width + _tileSpacing;
+        var spacing = GetComponent<RectTransform>().rect.width * _tileSpacing;
+        float w = rect.width - spacing;
+        float d = GetComponent<RectTransform>().rect.width + spacing;
         int columnCount = (int)(w / d);
         int y = Index / columnCount;
         int x = Index - y * columnCount;
-        transform.localPosition = new Vector3(_tileSpacing + x * d, -(_tileSpacing + y * d), 0) + new Vector3(rect.xMin, rect.yMax, 0);
+        transform.localPosition = new Vector3(spacing + x * d, -(spacing + y * d), 0) + new Vector3(rect.xMin, rect.yMax, 0);
     }
 
     private bool _isDragged = false;
