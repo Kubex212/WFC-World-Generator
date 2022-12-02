@@ -9,7 +9,7 @@ public class WFCGameObject : MonoBehaviour
     [SerializeField] private Button _goForwardButton;
     [SerializeField] private Button _retryButton;
 
-    private WaveFunctionCollapse _algorithm;
+    private WaveFunctionCollapse _algorithm = null;
 
     // Start is called before the first frame update
     void Start()
@@ -25,6 +25,8 @@ public class WFCGameObject : MonoBehaviour
 
     private void Next()
     {
+        if (_algorithm == null)
+            _algorithm = new WaveFunctionCollapse(3, 3, FindObjectOfType<DataHolder>().tileCollection);
         _algorithm.Next();
         // ...
     }
