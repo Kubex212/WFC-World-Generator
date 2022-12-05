@@ -48,13 +48,13 @@ public class TileCollectionRenderer : MonoBehaviour
 
     public void AddButton()
     {
-        var newTile = _tileCollection.AddTile();
         var imageFile = EditorUtility.OpenFilePanelWithFilters("Select new tile image.", "", new[]{ "Image files", "png,jpg,jpeg" });
         if (!File.Exists(imageFile))
         {
-            Debug.LogError("Chosen file does not exist");
+            Debug.Log("Didn't choose a file");
             return;
         }
+        var newTile = _tileCollection.AddTile();
         AddTileObject(newTile, imageFile);
     }
     private void AddTileObject(Tile tile, string imageFile)
@@ -147,7 +147,16 @@ public class TileCollectionRenderer : MonoBehaviour
     }
     private void OnDestroy()
     {
+        CreateAtlas();
         TempCleanup();
+    }
+    private void CreateAtlas()
+    {
+        SpriteAtlas.Atlas = tileObjects
+            .OrderBy((pair)=>pair.Key.Index)
+            .Select((t) => t.Value.GetComponent<Image>().sprite)
+            .ToArray();
+
     }
     private void TempCleanup()
     {

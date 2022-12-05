@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -8,18 +9,17 @@ public class WaveFunctionCollapse
 {
     private List<List<(Vector2Int, int)>> _neighborhoods = new List<List<(Vector2Int, int)>>();
     private HashSet<int>[,] _board;
-    private Dictionary<Vector2Int, List<int>> _modified = new Dictionary<Vector2Int, List<int>>();
     private Stack<Dictionary<Vector2Int, List<int>>> _history = new Stack<Dictionary<Vector2Int, List<int>>>();
     private EntropyQueue _queue;
-
-    private const int randomSeed = 1234567890;
-    private System.Random _randomEngine = new System.Random(randomSeed);
+    
+    private System.Random _randomEngine;
     private AlgorithmState state = AlgorithmState.Running;
 
-    public WaveFunctionCollapse(int width, int height, List<Tiles.Tile> tiles)
+    public WaveFunctionCollapse(int width, int height, List<Tiles.Tile> tiles, int randomSeed)
     {
         _board = new HashSet<int>[width, height];
-        _queue = new EntropyQueue(_board);
+        _randomEngine = new System.Random(randomSeed);
+        _queue = new EntropyQueue(_board, _randomEngine);
 
         for (int x = 0; x < _board.GetLength(0); x++)
             for (int y = 0; y < _board.GetLength(1); y++)
@@ -41,12 +41,12 @@ public class WaveFunctionCollapse
         }
     }
 
-    public AlgorithmState Next()
+    public Dictionary<Vector2Int, List<int>> Next()
     {
         var cell = Observe();
 
         if(state!=AlgorithmState.Running)
-                return state;
+            return null;
 
         var superposition = _board[cell.x, cell.y];
 
@@ -57,7 +57,10 @@ public class WaveFunctionCollapse
         superposition.Add(states[pickedState]);
 
         states.RemoveAt(pickedState);
-        _modified.Add(cell, states);
+        var modified = new Dictionary<Vector2Int, List<int>>
+        {
+            { cell, states }
+        };
 
         var s = new Stack<(Vector2Int cell, int tile)>();
         foreach (var tile in states) // begin by excluding all tiles not chosen during collapse
@@ -81,17 +84,15 @@ public class WaveFunctionCollapse
                         continue;
 
                     _board[n.cell.x,n.cell.y].Remove(n.tile); // exclude tile if not suported by anything anymore
-                    if (!_modified.ContainsKey(n.cell))
-                        _modified.Add(n.cell, new List<int>());
-                    _modified[n.cell].Add(n.tile);
+                    if (!modified.ContainsKey(n.cell))
+                        modified.Add(n.cell, new List<int>());
+                    modified[n.cell].Add(n.tile);
                     s.Push(n);
                 }
             }
         }
-        _history.Push(_modified);
-        _modified = new Dictionary<Vector2Int, List<int>>();
-        _queue.Notify();
-        return state;
+        _history.Push(modified);
+        return modified;
     }
     private bool InBounds(Vector2Int cell)
     {
@@ -132,6 +133,7 @@ public class WaveFunctionCollapse
             state = AlgorithmState.Paradox;
             return new Vector2Int(-1, -1);
         }
+        _queue.Notify(cell);
         return cell;
     }
     private Vector2Int DirectionEnum(Tiles.Direction dir)
@@ -154,27 +156,36 @@ public class WaveFunctionCollapse
     {
         private HashSet<int>[,] _board;
         private bool _boardModified = false;
+        private Vector2Int _lastModified;
         private List<Vector2Int> _list = new List<Vector2Int>();
         public int Count { get => _list.Count; }
-        public EntropyQueue(HashSet<int>[,] board)
+        public EntropyQueue(HashSet<int>[,] board, System.Random rng)
         {
             _board = board;
             for(int x = 0; x<board.GetLength(0); x++)
                 for(int y = 0; y< board.GetLength(1); y++)
                     _list.Add(new Vector2Int(x, y));
+            _list = _list.OrderBy(x => rng.Next()).ToList();
         }
         public Vector2Int Dequeue()
         {
             if (_boardModified)
             {
-                _list.Sort((v1, v2) => _board[v2.x, v2.y].Count - _board[v1.x, v1.y].Count);
+                _list.Sort((v1, v2)
+                    => (_board[v2.x, v2.y].Count - _board[v1.x, v1.y].Count) * _board.Length
+                    + (v2 - _lastModified).sqrMagnitude - (v1 - _lastModified).sqrMagnitude
+                    );
                 _boardModified = false;
             }
             var v = _list[_list.Count - 1];
             _list.RemoveAt(_list.Count-1);
             return v;
         }
-        public void Notify() { _boardModified = true; }
+        public void Notify(Vector2Int lastModified)
+        { 
+            _boardModified = true;
+            _lastModified = lastModified;
+        }
     }
     public enum AlgorithmState
     {
