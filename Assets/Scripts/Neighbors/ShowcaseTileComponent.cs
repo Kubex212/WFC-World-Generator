@@ -5,15 +5,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class NeighborTileGameObject : MonoBehaviour, IPointerClickHandler
+public class ShowcaseTileComponent : MonoBehaviour, IPointerClickHandler
 {
     public Tile tile;
     public void OnPointerClick(PointerEventData eventData)
     {
         if(eventData.button == PointerEventData.InputButton.Right)
         {
-            var selectedSlot = FindObjectOfType<SelectedSlotGameObject>();
-            var parentSlot = GetComponentInParent<NeighborSlotGameObject>();
+            var selectedSlot = FindObjectOfType<SelectedSlotComponent>();
+            var parentSlot = GetComponentInParent<NeighborSlotComponent>();
             selectedSlot.Selected.RemoveNeighbor(tile, parentSlot.direction);
             tile.RemoveNeighbor(selectedSlot.Selected, parentSlot.direction.Opposite());
             parentSlot.ShowNeighbors(selectedSlot.Selected);

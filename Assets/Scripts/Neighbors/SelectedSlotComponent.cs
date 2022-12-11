@@ -4,7 +4,7 @@ using UnityEngine;
 using Tiles;
 using UnityEngine.UI;
 
-public class SelectedSlotGameObject : TileSlot
+public class SelectedSlotComponent : TileSlot
 {
     [SerializeField] private Toggle _walkableToggle;
     [SerializeField] private Toggle _edgeTileToggle;

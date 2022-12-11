@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class TileGameObject : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler, IPointerDownHandler
+public class TileComponent : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler, IPointerDownHandler
 {
     public string imagePath = "";
     public int Index { get => tile.Index; }
@@ -56,12 +56,12 @@ public class TileGameObject : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     public void OnPointerUp(PointerEventData _)
     {
         var allSlots = FindObjectsOfType<TileSlot>();
-        var neighborSlots = FindObjectsOfType<NeighborSlotGameObject>();
-        var selectedSlot = FindObjectOfType<SelectedSlotGameObject>();
+        var neighborSlots = FindObjectsOfType<NeighborSlotComponent>();
+        var selectedSlot = FindObjectOfType<SelectedSlotComponent>();
         var slot = allSlots.Where(v => v.IsHovered).FirstOrDefault();
 
-        var neighborSlot = slot as NeighborSlotGameObject;
-        if (slot is NeighborSlotGameObject)
+        var neighborSlot = slot as NeighborSlotComponent;
+        if (slot is NeighborSlotComponent)
         {
             selectedSlot.Selected.AddNeighbor(tile, neighborSlot.direction);
             tile.AddNeighbor(selectedSlot.Selected, neighborSlot.direction.Opposite());

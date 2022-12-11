@@ -19,10 +19,10 @@ public class TileCollectionRenderer : MonoBehaviour
 
     private TileCollection _tileCollection = new TileCollection();
     public Tile EdgeTile { get => _tileCollection.edgeTile; }
-    public Dictionary<Tile, TileGameObject> tileObjects = new Dictionary<Tile, TileGameObject>();
+    public Dictionary<Tile, TileComponent> tileObjects = new Dictionary<Tile, TileComponent>();
 
-    private List<NeighborSlotGameObject> _neighborSlots;
-    private SelectedSlotGameObject _selectionSlot;
+    private List<NeighborSlotComponent> _neighborSlots;
+    private SelectedSlotComponent _selectionSlot;
 
     [SerializeField] private Button _addTileButton;
     [SerializeField] private Button _saveButton;
@@ -32,8 +32,8 @@ public class TileCollectionRenderer : MonoBehaviour
 
     void OnEnable()
     {
-        _neighborSlots = FindObjectsOfType<NeighborSlotGameObject>().OrderBy((v) => v.direction).ToList();
-        _selectionSlot = FindObjectOfType<SelectedSlotGameObject>();
+        _neighborSlots = FindObjectsOfType<NeighborSlotComponent>().OrderBy((v) => v.direction).ToList();
+        _selectionSlot = FindObjectOfType<SelectedSlotComponent>();
     }
     private void Start()
     {
@@ -45,7 +45,7 @@ public class TileCollectionRenderer : MonoBehaviour
     }
     private void OnRectTransformDimensionsChange()
     {
-        foreach (TileGameObject obj in tileObjects.Values)
+        foreach (TileComponent obj in tileObjects.Values)
         {
             obj.ResetPosition();
         }
@@ -65,9 +65,9 @@ public class TileCollectionRenderer : MonoBehaviour
     private void AddTileObject(Tile tile, string imageFile)
     {
         var tileGO = Instantiate(original: _tilePrefab, parent: transform);
-        tileGO.GetComponent<TileGameObject>().tile = tile;
-        tileGO.GetComponent<TileGameObject>().LoadImage(imageFile);
-        tileObjects[tile] = tileGO.GetComponent<TileGameObject>();
+        tileGO.GetComponent<TileComponent>().tile = tile;
+        tileGO.GetComponent<TileComponent>().LoadImage(imageFile);
+        tileObjects[tile] = tileGO.GetComponent<TileComponent>();
     }
     private void Save()
     {

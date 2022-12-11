@@ -5,7 +5,7 @@ using Tiles;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NeighborSlotGameObject : TileSlot
+public class NeighborSlotComponent : TileSlot
 {
     [SerializeField] GameObject _showcaseTilePrefab;
     public Direction direction;
@@ -25,7 +25,7 @@ public class NeighborSlotGameObject : TileSlot
                 .GetComponent<Image>().sprite;
             go.GetComponent<RectTransform>().localScale = Vector3.one * GetScale(size);
             go.GetComponent<RectTransform>().localPosition = GetPos(i, size);
-            go.GetComponent<NeighborTileGameObject>().tile = tiles[i];
+            go.GetComponent<ShowcaseTileComponent>().tile = tiles[i];
         }
     }
     private void Clear()
@@ -43,13 +43,13 @@ public class NeighborSlotGameObject : TileSlot
     }
     private float GetScale(int size)
     {
-        var tileSpacing = TileGameObject._tileSpacing;
+        var tileSpacing = TileComponent._tileSpacing;
         return 1f / (size * (1 + tileSpacing) + tileSpacing);
     }
     private Vector3 GetPos(int index, int size)
     {
         var rect = GetComponent<RectTransform>().rect;
-        var spacing = TileGameObject._tileSpacing*rect.width;
+        var spacing = TileComponent._tileSpacing*rect.width;
         var d = rect.width + spacing;
         int y = index / size;
         int x = index - y * size;
