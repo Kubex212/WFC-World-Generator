@@ -24,7 +24,7 @@ public class SelectedSlotGameObject : TileSlot
             _walkableToggle.isOn = value != null ? value.Walkable : false;
             _walkableToggle.interactable = value != null;
             _edgeTileToggle.isOn = value != null ? tcr.EdgeTile==value : false;
-            _edgeTileToggle.interactable = value != null;
+            _edgeTileToggle.interactable = value != null && !value.Walkable;
             _selected = value;
         }
     }
@@ -32,7 +32,14 @@ public class SelectedSlotGameObject : TileSlot
     private void Start()
     {
         _defaultColor = GetComponent<Image>().color;
-        _walkableToggle.onValueChanged.AddListener((v) => { if (_selected != null) _selected.Walkable = v; });
+        _walkableToggle.onValueChanged.AddListener((v) =>
+        {
+            if (_selected != null)
+            {
+                _selected.Walkable = v;
+                _edgeTileToggle.interactable = !v;
+            }
+        });
     }
 
     private Tile _selected;
