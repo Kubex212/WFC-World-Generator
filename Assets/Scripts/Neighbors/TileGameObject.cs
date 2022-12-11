@@ -36,7 +36,7 @@ public class TileGameObject : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             }
             else
             {
-                transform.SetParent(FindObjectOfType<TileCollectionRenderer>()._tilesPanel.transform);
+                transform.SetParent(FindObjectOfType<TileCollectionRenderer>().tilesPanel.transform);
                 ResetPosition();
             }
         }

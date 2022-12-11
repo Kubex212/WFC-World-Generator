@@ -15,9 +15,10 @@ using System;
 public class TileCollectionRenderer : MonoBehaviour
 {
     [SerializeField] private GameObject _tilePrefab;
-    public GameObject _tilesPanel;
+    public GameObject tilesPanel;
 
     private TileCollection _tileCollection = new TileCollection();
+    public Tile EdgeTile { get => _tileCollection.edgeTile; }
     public Dictionary<Tile, TileGameObject> tileObjects = new Dictionary<Tile, TileGameObject>();
 
     private List<NeighborSlotGameObject> _neighborSlots;
@@ -26,6 +27,9 @@ public class TileCollectionRenderer : MonoBehaviour
     [SerializeField] private Button _addTileButton;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _loadButton;
+
+    [SerializeField] private Toggle _edgeTileToggle;
+
     void OnEnable()
     {
         _neighborSlots = FindObjectsOfType<NeighborSlotGameObject>().OrderBy((v) => v.direction).ToList();
@@ -36,7 +40,8 @@ public class TileCollectionRenderer : MonoBehaviour
         _addTileButton.onClick.AddListener(AddButton);
         _saveButton.onClick.AddListener(Save);
         _loadButton.onClick.AddListener(Load);
-        FindObjectOfType<DataHolder>().tiles = _tileCollection.tiles;
+        _edgeTileToggle.onValueChanged.AddListener((v)=> { if (_selectionSlot.Selected != null) _tileCollection.edgeTile = v ? _selectionSlot.Selected : null; });
+        FindObjectOfType<DataHolder>().tiles = _tileCollection;
     }
     private void OnRectTransformDimensionsChange()
     {
@@ -123,7 +128,7 @@ public class TileCollectionRenderer : MonoBehaviour
 
         var json = File.ReadAllText(jsonPath);
         _tileCollection.Deserialize(json);
-        FindObjectOfType<DataHolder>().tiles = _tileCollection.tiles;
+        FindObjectOfType<DataHolder>().tiles = _tileCollection;
         Tile.Load(_tileCollection.tiles.Count);
         SpawnTiles(imgPath);
     }

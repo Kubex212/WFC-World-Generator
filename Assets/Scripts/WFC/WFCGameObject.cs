@@ -36,12 +36,12 @@ public class WFCGameObject : MonoBehaviour
 
     private void Restart()
     {
-        var tiles = FindObjectOfType<DataHolder>().tiles;
+        var tileCollection = FindObjectOfType<DataHolder>().tiles;
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
-                _board[x, y].Fill(tiles.Count);
+                _board[x, y].Fill(tileCollection.tiles.Count);
             }
         }
         _randomSeed++;
@@ -49,26 +49,31 @@ public class WFCGameObject : MonoBehaviour
     }
     private void Next()
     {
-        var tiles = FindObjectOfType<DataHolder>().tiles;
+        var tileCollection = FindObjectOfType<DataHolder>().tiles;
+        Dictionary<Vector2Int, List<int>> modified = null;
         if (_algorithm == null)
         {
-            _board = new CellComponent[_width,_height];
-            for(int x = 0; x< _width; x++)
+            _board = new CellComponent[_width, _height];
+            for (int x = 0; x < _width; x++)
             {
-                for(int y = 0; y< _height; y++)
+                for (int y = 0; y < _height; y++)
                 {
                     _board[x, y] = Instantiate(original: _cellPrefab, parent: transform).GetComponent<CellComponent>();
-                    int size = Math.Max(_width,_height);
+                    int size = Math.Max(_width, _height);
                     float pixSize = Math.Min(GetComponent<RectTransform>().rect.width, GetComponent<RectTransform>().rect.height);
-                    _board[x, y].GetComponent<RectTransform>().localScale = pixSize * Vector3.one/size;
-                    _board[x, y].GetComponent<RectTransform>().localPosition = GetPos(x,y, size, pixSize);
-                    _board[x, y].Fill(tiles.Count);
+                    _board[x, y].GetComponent<RectTransform>().localScale = pixSize * Vector3.one / size;
+                    _board[x, y].GetComponent<RectTransform>().localPosition = GetPos(x, y, size, pixSize);
+                    _board[x, y].Fill(tileCollection.tiles.Count);
                 }
             }
-            _algorithm = new WaveFunctionCollapse(_width, _height, tiles, _randomSeed);
+            _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection.tiles, _randomSeed);
+            if (tileCollection.edgeTile != null)
+                modified = _algorithm.EnforceEdgeRules(tileCollection.edgeTile.Index);
         }
-
-        var modified = _algorithm.Next();
+        else
+        {
+            modified = _algorithm.Next();
+        }
         if(modified!=null)
             foreach (var key in modified.Keys)
             {

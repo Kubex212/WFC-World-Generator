@@ -40,6 +40,17 @@ public class WaveFunctionCollapse
             }
         }
     }
+    public Dictionary<Vector2Int, List<int>> EnforceEdgeRules(int edgeTile)
+    {
+        var modified = new Dictionary<Vector2Int, List<int>>();
+        foreach (var cell in EdgeCells)
+        {
+            modified.Add(cell, Collapse(cell, edgeTile));
+        }
+        Propagate(modified);
+
+        return modified;
+    }
 
     public Dictionary<Vector2Int, List<int>> Next()
     {
@@ -48,70 +59,17 @@ public class WaveFunctionCollapse
         if(state!=AlgorithmState.Running)
             return null;
 
-        var superposition = _board[cell.x, cell.y];
+        var collapsedStates = Collapse(cell);
 
-        var states = superposition.ToList();
-        superposition.Clear();
-
-        var pickedState = _randomEngine.Next(states.Count);
-        superposition.Add(states[pickedState]);
-
-        states.RemoveAt(pickedState);
         var modified = new Dictionary<Vector2Int, List<int>>
         {
-            { cell, states }
+            { cell, collapsedStates }
         };
 
-        var s = new Stack<(Vector2Int cell, int tile)>();
-        foreach (var tile in states) // begin by excluding all tiles not chosen during collapse
-            s.Push((cell, tile));
-
-        while(s.Count > 0)
-        {
-            var point = s.Pop();
-            var neighbors = GetNeighbors(point);
-            foreach ((Vector2Int cell, int tile) n in neighbors) // loop through all possible neighboring tiles
-            {
-                if (_board[n.cell.x, n.cell.y].Contains(n.tile)) // if tile not excluded yet, visit
-                {
-                    var nneighbors = GetNeighbors(n);
-                    if (nneighbors.Any( // if tile is still supported by anything else, skip
-                        ((Vector2Int cell, int tile) p)
-                            => p.cell==point.cell &&
-                            _board[p.cell.x,p.cell.y].Contains(p.tile)
-                            )
-                        ) 
-                        continue;
-
-                    _board[n.cell.x,n.cell.y].Remove(n.tile); // exclude tile if not suported by anything anymore
-                    if (!modified.ContainsKey(n.cell))
-                        modified.Add(n.cell, new List<int>());
-                    modified[n.cell].Add(n.tile);
-                    s.Push(n);
-                }
-            }
-        }
+        Propagate(modified);
         _history.Push(modified);
         return modified;
     }
-    private bool InBounds(Vector2Int cell)
-    {
-        return cell.x>=0 &&
-            cell.y>=0 &&
-            cell.x<_board.GetLength(0) &&
-            cell.y<_board.GetLength(1);
-    }
-    private List<(Vector2Int, int)> GetNeighbors((Vector2Int c, int t) point)
-    {
-        return _neighborhoods[point.t].Select(
-            ((Vector2Int c, int t) p)
-            => (p.c + point.c, p.t)
-            ).Where(
-            ((Vector2Int c, int t) p)
-            => InBounds(p.c)
-            ).ToList();
-    }
-
     private Vector2Int Observe()
     {
         Vector2Int cell;
@@ -133,9 +91,72 @@ public class WaveFunctionCollapse
             state = AlgorithmState.Paradox;
             return new Vector2Int(-1, -1);
         }
-        _queue.Notify(cell);
         return cell;
     }
+    private List<int> Collapse(Vector2Int cell, int? tile = null)
+    {
+        var superposition = _board[cell.x, cell.y];
+
+        var states = superposition.ToList();
+        superposition.Clear();
+
+        var pickedState = tile ?? _randomEngine.Next(states.Count);
+        superposition.Add(states[pickedState]);
+
+        states.RemoveAt(pickedState);
+        return states;
+    }
+    private void Propagate(Dictionary<Vector2Int, List<int>> modified)
+    {
+        var s = new Stack<(Vector2Int cell, int tile)>();
+        foreach (var cell in modified.Keys) // begin by excluding all tiles modified
+            foreach (var tile in modified[cell])
+                s.Push((cell, tile));
+        while (s.Count > 0)
+        {
+            var point = s.Pop();
+            var neighbors = GetNeighbors(point);
+            foreach ((Vector2Int cell, int tile) n in neighbors) // loop through all possible neighboring tiles
+            {
+                if (_board[n.cell.x, n.cell.y].Contains(n.tile)) // if tile not excluded yet, visit
+                {
+                    var nneighbors = GetNeighbors(n);
+                    if (nneighbors.Any( // if tile is still supported by anything else, skip
+                        ((Vector2Int cell, int tile) p)
+                            => p.cell == point.cell &&
+                            _board[p.cell.x, p.cell.y].Contains(p.tile)
+                            )
+                        )
+                        continue;
+
+                    _board[n.cell.x, n.cell.y].Remove(n.tile); // exclude tile if not suported by anything anymore
+                    if (!modified.ContainsKey(n.cell))
+                        modified.Add(n.cell, new List<int>());
+                    modified[n.cell].Add(n.tile);
+                    s.Push(n);
+                }
+            }
+        }
+        _queue.Notify(modified.First().Key);
+    }
+    private bool InBounds(Vector2Int cell)
+    {
+        return cell.x >= 0 &&
+            cell.y >= 0 &&
+            cell.x < _board.GetLength(0) &&
+            cell.y < _board.GetLength(1);
+    }
+    private List<(Vector2Int, int)> GetNeighbors((Vector2Int c, int t) point)
+    {
+        return _neighborhoods[point.t].Select(
+            ((Vector2Int c, int t) p)
+            => (p.c + point.c, p.t)
+            ).Where(
+            ((Vector2Int c, int t) p)
+            => InBounds(p.c)
+            ).ToList();
+    }
+
     private Vector2Int DirectionEnum(Tiles.Direction dir)
     {
         return dir switch
@@ -150,6 +171,22 @@ public class WaveFunctionCollapse
             Tiles.Direction.NorthWest => new(-1, -1),
             _ => new(0, 0),
         };
+    }
+    private IEnumerable<Vector2Int> EdgeCells
+    {
+        get
+        {
+            for (int x = 0; x < _board.GetLength(0); x++)
+            {
+                yield return new Vector2Int(x, 0);
+                yield return new Vector2Int(x, _board.GetLength(0)-1);
+            }
+            for(int y = 1; y<_board.GetLength(1)-1; y++)
+            {
+                yield return new Vector2Int(0, y);
+                yield return new Vector2Int(_board.GetLength(1) - 1, y);
+            }
+        }
     }
 
     private class EntropyQueue

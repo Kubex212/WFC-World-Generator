@@ -10,6 +10,7 @@ namespace Tiles
     public class TileCollection
     {
         public List<Tile> tiles = new List<Tile>();
+        public Tile edgeTile;
 
         public Tile AddTile()
         {
@@ -21,7 +22,7 @@ namespace Tiles
 
         public string Serialize()
         {
-            var exportObject = new ExportObject() { Tiles = tiles };
+            var exportObject = new ExportObject() { Tiles = tiles, EdgeTile = edgeTile };
             return JsonConvert.SerializeObject(exportObject, Formatting.Indented, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.Objects });
         }
 
@@ -29,10 +30,12 @@ namespace Tiles
         {
             var importedObject = JsonConvert.DeserializeObject<ExportObject>(json);
             tiles = importedObject.Tiles;
+            edgeTile = importedObject.EdgeTile;
         }
         public class ExportObject
         {
             public List<Tile> Tiles { get; set; }
+            public Tile EdgeTile { get; set; }
         }
     }
 }
