@@ -143,6 +143,10 @@ public class TileCollectionRenderer : MonoBehaviour
             Destroy(obj.gameObject);
         }
         tileObjects.Clear();
+        foreach(var slot in _neighborSlots)
+        {
+            slot.ShowNeighbors(null);
+        }
         _selectionSlot.Selected = null;
     }
     private void OnDestroy()

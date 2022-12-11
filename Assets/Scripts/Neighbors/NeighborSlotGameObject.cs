@@ -13,6 +13,8 @@ public class NeighborSlotGameObject : TileSlot
     public void ShowNeighbors(Tile t)
     {
         Clear();
+        if (t == null)
+            return;
         var tiles = t.Neighbors[(int)direction];
         int size = SizeFromCount(tiles.Count);
         for (int i = 0; i<tiles.Count; i++)
