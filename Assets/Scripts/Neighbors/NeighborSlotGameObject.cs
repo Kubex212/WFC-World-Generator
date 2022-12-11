@@ -25,6 +25,7 @@ public class NeighborSlotGameObject : TileSlot
                 .GetComponent<Image>().sprite;
             go.GetComponent<RectTransform>().localScale = Vector3.one * GetScale(size);
             go.GetComponent<RectTransform>().localPosition = GetPos(i, size);
+            go.GetComponent<NeighborTileGameObject>().tile = tiles[i];
         }
     }
     private void Clear()

@@ -22,7 +22,8 @@ namespace Tiles
         }
         public void RemoveNeighbor(Tile neighbor, Direction direction)
         {
-            Neighbors[(int)(direction)].Remove(neighbor);
+            if (Neighbors[(int)(direction)].Contains(neighbor))
+                Neighbors[(int)(direction)].Remove(neighbor);
         }
         public static void Load(int amount) => _nextIndex = amount;
         private static int _nextIndex = 0;
