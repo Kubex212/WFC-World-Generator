@@ -11,6 +11,7 @@ namespace Tiles
     {
         public List<Tile> tiles = new List<Tile>();
         public Tile edgeTile;
+        public bool diagonal;
 
         public Tile AddTile()
         {
@@ -22,7 +23,7 @@ namespace Tiles
 
         public string Serialize()
         {
-            var exportObject = new ExportObject() { Tiles = tiles, EdgeTile = edgeTile };
+            var exportObject = new ExportObject() { Tiles = tiles, EdgeTile = edgeTile, Diagonal = diagonal };
             return JsonConvert.SerializeObject(exportObject, Formatting.Indented, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.Objects });
         }
 
@@ -31,11 +32,13 @@ namespace Tiles
             var importedObject = JsonConvert.DeserializeObject<ExportObject>(json);
             tiles = importedObject.Tiles;
             edgeTile = importedObject.EdgeTile;
+            diagonal = importedObject.Diagonal;
         }
         public class ExportObject
         {
             public List<Tile> Tiles { get; set; }
             public Tile EdgeTile { get; set; }
+            public bool Diagonal { get; set; }
         }
     }
 }

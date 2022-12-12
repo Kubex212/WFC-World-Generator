@@ -9,34 +9,45 @@ public class WaveFunctionCollapse
 {
     private List<List<(Vector2Int, int)>> _neighborhoods = new List<List<(Vector2Int, int)>>();
     private HashSet<int>[,] _board;
+    //private HashSet<int>[,] _rooms;
+    //private HashSet<int> _availableRooms;
     private Stack<Dictionary<Vector2Int, List<int>>> _history = new Stack<Dictionary<Vector2Int, List<int>>>();
     private EntropyQueue _queue;
     
     private System.Random _randomEngine;
     private AlgorithmState state = AlgorithmState.Running;
 
-    public WaveFunctionCollapse(int width, int height, List<Tiles.Tile> tiles, int randomSeed)
+    public WaveFunctionCollapse(int width, int height, Tiles.TileCollection tileset, Graphs.UndirectedGraph graph, int randomSeed)
     {
         _board = new HashSet<int>[width, height];
+        //_rooms = new HashSet<int>[width, height];
+        //_availableRooms = new HashSet<int>(Enumerable.Range(0, graph.Vertices.Count));
+
+
         _randomEngine = new System.Random(randomSeed);
         _queue = new EntropyQueue(_board, _randomEngine);
 
         for (int x = 0; x < _board.GetLength(0); x++)
             for (int y = 0; y < _board.GetLength(1); y++)
             {
-                _board[x, y] = new HashSet<int>();
-                for (int i = 0; i < tiles.Count; i++)
-                    _board[x, y].Add(i);
-
+                _board[x, y] = new HashSet<int>(Enumerable.Range(0, tileset.tiles.Count));
+                //_rooms[x, y] = new HashSet<int>(Enumerable.Range(0, graph.Vertices.Count));
             }
-        for(int i = 0; i<tiles.Count; i++)
+
+
+        for (int i = 0; i<tileset.tiles.Count; i++)
         {
             _neighborhoods.Add(new List<(Vector2Int, int)>());
             for(int dir = 0; dir<8; dir++)
             {
                 var coord = DirectionEnum((Tiles.Direction)dir);
-                foreach (var tile in tiles[i].Neighbors[dir])
-                    _neighborhoods[i].Add((coord, tile.Index));
+                if (!tileset.diagonal && dir % 2 == 1)
+                    for (int index = 0; index<tileset.tiles.Count; index++)
+                        _neighborhoods[i].Add((coord, index));
+                else
+                    foreach (var tile in tileset.tiles[i].Neighbors[dir])
+                        _neighborhoods[i].Add((coord, tile.Index));
+
             }
         }
     }

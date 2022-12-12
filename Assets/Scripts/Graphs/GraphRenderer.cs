@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using UnityEditor;
 using System.IO;
 using UnityEngine.Events;
+using Tiles;
 
 public class GraphRenderer : MonoBehaviour
 {
@@ -40,6 +41,8 @@ public class GraphRenderer : MonoBehaviour
 
         SpawnVertices();
         SpawnEdges();
+
+        FindObjectOfType<DataHolder>().Graph = Graph;
     }
 
     // Update is called once per frame
@@ -186,6 +189,8 @@ public class GraphRenderer : MonoBehaviour
 
             SpawnVertices(positions);
             SpawnEdges();
+
+            FindObjectOfType<DataHolder>().Graph = Graph;
         }
     }
 

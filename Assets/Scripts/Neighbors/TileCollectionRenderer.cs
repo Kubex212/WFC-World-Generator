@@ -29,6 +29,7 @@ public class TileCollectionRenderer : MonoBehaviour
     [SerializeField] private Button _loadButton;
 
     [SerializeField] private Toggle _edgeTileToggle;
+    [SerializeField] private Toggle _diagonalityToggle;
 
     void OnEnable()
     {
@@ -40,8 +41,18 @@ public class TileCollectionRenderer : MonoBehaviour
         _addTileButton.onClick.AddListener(AddButton);
         _saveButton.onClick.AddListener(Save);
         _loadButton.onClick.AddListener(Load);
-        _edgeTileToggle.onValueChanged.AddListener((v)=> { if (_selectionSlot.Selected != null) _tileCollection.edgeTile = v ? _selectionSlot.Selected : null; });
-        FindObjectOfType<DataHolder>().tiles = _tileCollection;
+        _edgeTileToggle.onValueChanged.AddListener((v) =>
+        {
+            if (_selectionSlot.Selected != null) _tileCollection.edgeTile = v ? _selectionSlot.Selected : null;
+        });
+        _diagonalityToggle.onValueChanged.AddListener((v) =>
+        {
+            _tileCollection.diagonal = v;
+            foreach(var slot in _neighborSlots)
+                if((int)slot.direction%2==1)
+                    slot.gameObject.SetActive(v);
+        });
+        FindObjectOfType<DataHolder>().Tiles = _tileCollection;
     }
     private void OnRectTransformDimensionsChange()
     {
@@ -125,12 +136,14 @@ public class TileCollectionRenderer : MonoBehaviour
         ZipFile.ExtractToDirectory(zipPath, imgPath);
 
         var jsonPath = Path.Combine(imgPath, Path.ChangeExtension(Path.GetFileName(zipPath), ".json"));
-
         var json = File.ReadAllText(jsonPath);
         _tileCollection.Deserialize(json);
-        FindObjectOfType<DataHolder>().tiles = _tileCollection;
+
+        FindObjectOfType<DataHolder>().Tiles = _tileCollection;
         Tile.Load(_tileCollection.tiles.Count);
         SpawnTiles(imgPath);
+
+        _diagonalityToggle.isOn = _tileCollection.diagonal;
     }
 
     private void SpawnTiles(string pictures)

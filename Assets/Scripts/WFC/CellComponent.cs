@@ -16,6 +16,7 @@ public class CellComponent : MonoBehaviour
             _superposition.Add(i);
         }
         GetComponent<Image>().color = Color.black;
+        GetComponent<Image>().sprite = null;
     }
     public void Remove(IEnumerable<int> indexes)
     {
