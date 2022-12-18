@@ -28,14 +28,16 @@ public class WFCComponent : MonoBehaviour
         _retryButton.onClick.AddListener(Init);
         _board = new CellComponent[_width, _height];
         var tileCollection = FindObjectOfType<DataHolder>().Tiles;
+        int size = Math.Max(_width, _height);
+        float pixSize = Math.Min(GetComponent<RectTransform>().rect.width, GetComponent<RectTransform>().rect.height);
+        float childSize = _cellPrefab.GetComponent<RectTransform>().rect.width;
+        var scale = pixSize * Vector3.one / size / childSize;
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
                 _board[x, y] = Instantiate(original: _cellPrefab, parent: transform).GetComponent<CellComponent>();
-                int size = Math.Max(_width, _height);
-                float pixSize = Math.Min(GetComponent<RectTransform>().rect.width, GetComponent<RectTransform>().rect.height);
-                _board[x, y].GetComponent<RectTransform>().localScale = pixSize * Vector3.one / size;
+                _board[x, y].GetComponent<RectTransform>().localScale = scale;
                 _board[x, y].GetComponent<RectTransform>().localPosition = GetPos(x, y, size, pixSize);
             }
         }
@@ -58,12 +60,12 @@ public class WFCComponent : MonoBehaviour
         {
             for (int y = 0; y < _height; y++)
             {
-                _board[x, y].Fill(tileCollection.tiles.Count);
+                _board[x, y].Fill(tileCollection.tiles.Count, graph.Vertices.Count);
             }
         }
         _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed);
 
-        Dictionary<Vector2Int, List<int>> modified = null;
+        WaveFunctionCollapse.Modification modified = null;
         if (tileCollection.edgeTile != null)
             modified = _algorithm.EnforceEdgeRules(tileCollection.edgeTile.Index);
         UpdateVisuals(modified);
@@ -76,12 +78,12 @@ public class WFCComponent : MonoBehaviour
         UpdateVisuals(modified);
     }
 
-    private void UpdateVisuals(Dictionary<Vector2Int, List<int>> modified)
+    private void UpdateVisuals(WaveFunctionCollapse.Modification modified)
     {
         if (modified != null)
             foreach (var key in modified.Keys)
             {
-                _board[key.x, key.y].Remove(modified[key]);
+                _board[key.x, key.y].Remove(modified[key].tiles, modified[key].rooms);
             }
     }
 

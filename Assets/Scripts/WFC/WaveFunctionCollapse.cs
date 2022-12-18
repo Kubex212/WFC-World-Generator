@@ -9,9 +9,9 @@ public class WaveFunctionCollapse
 {
     private List<List<(Vector2Int, int)>> _neighborhoods = new List<List<(Vector2Int, int)>>();
     private HashSet<int>[,] _board;
-    //private HashSet<int>[,] _rooms;
-    //private HashSet<int> _availableRooms;
-    private Stack<Dictionary<Vector2Int, List<int>>> _history = new Stack<Dictionary<Vector2Int, List<int>>>();
+    private HashSet<int>[,] _rooms;
+    private HashSet<int> _availableRooms;
+    private Stack<Modification> _history = new Stack<Modification>();
     private EntropyQueue _queue;
     
     private System.Random _randomEngine;
@@ -20,8 +20,8 @@ public class WaveFunctionCollapse
     public WaveFunctionCollapse(int width, int height, Tiles.TileCollection tileset, Graphs.UndirectedGraph graph, int randomSeed)
     {
         _board = new HashSet<int>[width, height];
-        //_rooms = new HashSet<int>[width, height];
-        //_availableRooms = new HashSet<int>(Enumerable.Range(0, graph.Vertices.Count));
+        _rooms = new HashSet<int>[width, height];
+        _availableRooms = new HashSet<int>(Enumerable.Range(0, graph.Vertices.Count));
 
 
         _randomEngine = new System.Random(randomSeed);
@@ -31,7 +31,7 @@ public class WaveFunctionCollapse
             for (int y = 0; y < _board.GetLength(1); y++)
             {
                 _board[x, y] = new HashSet<int>(Enumerable.Range(0, tileset.tiles.Count));
-                //_rooms[x, y] = new HashSet<int>(Enumerable.Range(0, graph.Vertices.Count));
+                _rooms[x, y] = new HashSet<int>(Enumerable.Range(0, graph.Vertices.Count));
             }
 
 
@@ -51,9 +51,9 @@ public class WaveFunctionCollapse
             }
         }
     }
-    public Dictionary<Vector2Int, List<int>> EnforceEdgeRules(int edgeTile)
+    public Modification EnforceEdgeRules(int edgeTile)
     {
-        var modified = new Dictionary<Vector2Int, List<int>>();
+        var modified = new Modification();
         foreach (var cell in EdgeCells)
         {
             modified.Add(cell, Collapse(cell, edgeTile));
@@ -63,7 +63,7 @@ public class WaveFunctionCollapse
         return modified;
     }
 
-    public Dictionary<Vector2Int, List<int>> Next()
+    public Modification Next()
     {
         var cell = Observe();
 
@@ -72,7 +72,7 @@ public class WaveFunctionCollapse
 
         var collapsedStates = Collapse(cell);
 
-        var modified = new Dictionary<Vector2Int, List<int>>
+        var modified = new Modification
         {
             { cell, collapsedStates }
         };
@@ -104,7 +104,7 @@ public class WaveFunctionCollapse
         }
         return cell;
     }
-    private List<int> Collapse(Vector2Int cell, int? tile = null)
+    private (List<int> tiles, List<int> rooms) Collapse(Vector2Int cell, int? tile = null)
     {
         var superposition = _board[cell.x, cell.y];
 
@@ -115,13 +115,14 @@ public class WaveFunctionCollapse
         superposition.Add(states[pickedState]);
 
         states.RemoveAt(pickedState);
-        return states;
+        //TODO: collapse rooms correctly
+        return (states, _rooms[cell.x, cell.y].ToList());
     }
-    private void Propagate(Dictionary<Vector2Int, List<int>> modified)
+    private void Propagate(Modification modified)
     {
         var s = new Stack<(Vector2Int cell, int tile)>();
         foreach (var cell in modified.Keys) // begin by excluding all tiles modified
-            foreach (var tile in modified[cell])
+            foreach (var tile in modified[cell].tiles)
                 s.Push((cell, tile));
         while (s.Count > 0)
         {
@@ -142,8 +143,8 @@ public class WaveFunctionCollapse
 
                     _board[n.cell.x, n.cell.y].Remove(n.tile); // exclude tile if not suported by anything anymore
                     if (!modified.ContainsKey(n.cell))
-                        modified.Add(n.cell, new List<int>());
-                    modified[n.cell].Add(n.tile);
+                        modified.Add(n.cell, (new(),new()));
+                    modified[n.cell].tiles.Add(n.tile);
                     s.Push(n);
                 }
             }
@@ -199,6 +200,8 @@ public class WaveFunctionCollapse
             }
         }
     }
+
+    public class Modification : Dictionary<Vector2Int, (List<int> tiles, List<int> rooms)> { }
 
     private class EntropyQueue
     {
