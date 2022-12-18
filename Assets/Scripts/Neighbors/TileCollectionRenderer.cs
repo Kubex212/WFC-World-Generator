@@ -15,32 +15,48 @@ using System;
 public class TileCollectionRenderer : MonoBehaviour
 {
     [SerializeField] private GameObject _tilePrefab;
-    public GameObject _tilesPanel;
+    public GameObject tilesPanel;
 
     private TileCollection _tileCollection = new TileCollection();
-    public Dictionary<Tile, TileGameObject> tileObjects = new Dictionary<Tile, TileGameObject>();
+    public Tile EdgeTile { get => _tileCollection.edgeTile; }
+    public Dictionary<Tile, TileComponent> tileObjects = new Dictionary<Tile, TileComponent>();
 
-    private List<NeighborSlotGameObject> _neighborSlots;
-    private SelectedSlotGameObject _selectionSlot;
+    private List<NeighborSlotComponent> _neighborSlots;
+    private SelectedSlotComponent _selectionSlot;
 
     [SerializeField] private Button _addTileButton;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _loadButton;
+
+    [SerializeField] private Toggle _edgeTileToggle;
+    [SerializeField] private Toggle _diagonalityToggle;
+
     void OnEnable()
     {
-        _neighborSlots = FindObjectsOfType<NeighborSlotGameObject>().OrderBy((v) => v.direction).ToList();
-        _selectionSlot = FindObjectOfType<SelectedSlotGameObject>();
+        _neighborSlots = FindObjectsOfType<NeighborSlotComponent>().OrderBy((v) => v.direction).ToList();
+        _selectionSlot = FindObjectOfType<SelectedSlotComponent>();
     }
     private void Start()
     {
         _addTileButton.onClick.AddListener(AddButton);
         _saveButton.onClick.AddListener(Save);
         _loadButton.onClick.AddListener(Load);
-        FindObjectOfType<DataHolder>().tiles = _tileCollection.tiles;
+        _edgeTileToggle.onValueChanged.AddListener((v) =>
+        {
+            if (_selectionSlot.Selected != null) _tileCollection.edgeTile = v ? _selectionSlot.Selected : null;
+        });
+        _diagonalityToggle.onValueChanged.AddListener((v) =>
+        {
+            _tileCollection.diagonal = v;
+            foreach(var slot in _neighborSlots)
+                if((int)slot.direction%2==1)
+                    slot.gameObject.SetActive(v);
+        });
+        FindObjectOfType<DataHolder>().Tiles = _tileCollection;
     }
     private void OnRectTransformDimensionsChange()
     {
-        foreach (TileGameObject obj in tileObjects.Values)
+        foreach (TileComponent obj in tileObjects.Values)
         {
             obj.ResetPosition();
         }
@@ -48,21 +64,21 @@ public class TileCollectionRenderer : MonoBehaviour
 
     public void AddButton()
     {
-        var newTile = _tileCollection.AddTile();
         var imageFile = EditorUtility.OpenFilePanelWithFilters("Select new tile image.", "", new[]{ "Image files", "png,jpg,jpeg" });
         if (!File.Exists(imageFile))
         {
-            Debug.LogError("Chosen file does not exist");
+            Debug.Log("Didn't choose a file");
             return;
         }
+        var newTile = _tileCollection.AddTile();
         AddTileObject(newTile, imageFile);
     }
     private void AddTileObject(Tile tile, string imageFile)
     {
         var tileGO = Instantiate(original: _tilePrefab, parent: transform);
-        tileGO.GetComponent<TileGameObject>().tile = tile;
-        tileGO.GetComponent<TileGameObject>().LoadImage(imageFile);
-        tileObjects[tile] = tileGO.GetComponent<TileGameObject>();
+        tileGO.GetComponent<TileComponent>().tile = tile;
+        tileGO.GetComponent<TileComponent>().LoadImage(imageFile);
+        tileObjects[tile] = tileGO.GetComponent<TileComponent>();
     }
     private void Save()
     {
@@ -120,12 +136,14 @@ public class TileCollectionRenderer : MonoBehaviour
         ZipFile.ExtractToDirectory(zipPath, imgPath);
 
         var jsonPath = Path.Combine(imgPath, Path.ChangeExtension(Path.GetFileName(zipPath), ".json"));
-
         var json = File.ReadAllText(jsonPath);
         _tileCollection.Deserialize(json);
-        FindObjectOfType<DataHolder>().tiles = _tileCollection.tiles;
+
+        FindObjectOfType<DataHolder>().Tiles = _tileCollection;
         Tile.Load(_tileCollection.tiles.Count);
         SpawnTiles(imgPath);
+
+        _diagonalityToggle.isOn = _tileCollection.diagonal;
     }
 
     private void SpawnTiles(string pictures)
@@ -143,11 +161,24 @@ public class TileCollectionRenderer : MonoBehaviour
             Destroy(obj.gameObject);
         }
         tileObjects.Clear();
+        foreach(var slot in _neighborSlots)
+        {
+            slot.ShowNeighbors(null);
+        }
         _selectionSlot.Selected = null;
     }
     private void OnDestroy()
     {
+        CreateAtlas();
         TempCleanup();
+    }
+    private void CreateAtlas()
+    {
+        SpriteAtlas.Atlas = tileObjects
+            .OrderBy((pair)=>pair.Key.Index)
+            .Select((t) => t.Value.GetComponent<Image>().sprite)
+            .ToArray();
+
     }
     private void TempCleanup()
     {
