@@ -2,33 +2,60 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-public class ExtraRestrictionGameObject : MonoBehaviour
+public class ExtraRestrictionGameObject : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler, IPointerDownHandler
 {
-    [SerializeField] private SpriteRenderer _spriteRenderer;
+    [SerializeField] private Image _image;
     [SerializeField] private GraphRenderer _graphRenderer;
     [SerializeField] public RestrictionType restrictionType;
     
     public Target Target { get => restrictionType == RestrictionType.Lock ? Target.Edge : Target.Vertex; }
     public bool IsSelected { get; private set; }
+    public bool IsDragged
+    {
+        get
+        {
+            return _isDragged;
+        }
+        private set
+        {
+            if (value == _isDragged) return;
+            _isDragged = value;
+            _offset = gameObject.transform.position - Input.mousePosition.ZeroZ();
+            _image.color = new Color(1, 1, 1, value ? 0.5f : 1);
+            if (_isDragged)
+            {
+                //transform.SetParent(FindObjectOfType<Canvas>().transform);
+            }
+            else
+            {
+                transform.position = _originalPosition;
+            }
+        }
+    }
 
     private Vector3 _offset;
     private Vector3 _originalPosition;
+    private bool _isDragged;
 
     void Start()
     {
         _originalPosition = transform.position;
-        _spriteRenderer.size = new Vector2(1f, 1f);
+        //_spriteRenderer.size = new Vector2(1f, 1f);
     }
 
     void Update()
     {
-
+        if(IsDragged)
+            gameObject.transform.position = Input.mousePosition.ZeroZ() + _offset;
     }
 
     private void OnMouseEnter()
     {
         IsSelected = true;
+        Debug.Log(IsSelected);
     }
 
     private void OnMouseExit()
@@ -58,8 +85,10 @@ public class ExtraRestrictionGameObject : MonoBehaviour
             }
         }
 
-        _spriteRenderer.color = new Color(1, 1, 1, 1);
+        _image.color = new Color(1, 1, 1, 1);
         transform.position = _originalPosition;
+
+        IsDragged = false;
     }
 
     private void OnMouseDrag()
@@ -72,8 +101,29 @@ public class ExtraRestrictionGameObject : MonoBehaviour
         var offset = gameObject.transform.position - GetMousePos();
         _offset = new Vector3(offset.x, offset.y, 0);
 
-        _spriteRenderer.color = new Color(1, 1, 1, .5f);
+        IsDragged = true;
+        //_spriteRenderer.color = new Color(1, 1, 1, .5f);
     }
+
+    public void OnPointerUp(PointerEventData _)
+    {
+        OnMouseUp();
+    }
+    public void OnPointerDown(PointerEventData _)
+    {
+        OnMouseDown();
+    }
+
+    public void OnPointerEnter(PointerEventData _)
+    {
+        OnMouseEnter();
+    }
+
+    public void OnPointerExit(PointerEventData _)
+    {
+        OnMouseExit();
+    }
+
     private Vector3 GetMousePos()
     {
         var mousePos = Input.mousePosition.ZeroZ();
