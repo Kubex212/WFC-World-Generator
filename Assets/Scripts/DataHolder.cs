@@ -7,8 +7,8 @@ using UnityEngine.SceneManagement;
 
 public class DataHolder : MonoBehaviour
 {
-    public TileCollection Tiles { get; set; }
-    public UndirectedGraph Graph { get; set; }
+    public TileCollection Tiles { get; set; } = null;
+    public UndirectedGraph Graph { get; set; } = null;
 
     // Start is called before the first frame update
     void Start()

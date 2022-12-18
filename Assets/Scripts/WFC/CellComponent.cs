@@ -15,7 +15,7 @@ public class CellComponent : MonoBehaviour
         {
             _superposition.Add(i);
         }
-        GetComponent<Image>().color = Color.black;
+        GetComponent<Image>().color = Color.red;
         GetComponent<Image>().sprite = null;
     }
     public void Remove(IEnumerable<int> indexes)
@@ -25,11 +25,12 @@ public class CellComponent : MonoBehaviour
             _superposition.Remove(tile);
         }
 
-        GetComponent<Image>().color = Color.white.Darker((_superposition.Count-1f)/(_maxPossibilities-1));
+        GetComponent<Image>().color = Color.Lerp(Color.blue, Color.red, (_superposition.Count-1f)/(_maxPossibilities-1));
 
         if (_superposition.Count == 1)
         {
             GetComponent<Image>().sprite = SpriteAtlas.Atlas[_superposition.First()];
+            GetComponent<Image>().color = Color.white;
         }
     }
 }
