@@ -1178,7 +1178,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _image: {fileID: 629175297}
   _graphRenderer: {fileID: 996852493}
-  restrictionType: 0
+  restrictionType: 1
 --- !u!61 &629175296
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3151,7 +3151,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _image: {fileID: 1820595445}
   _graphRenderer: {fileID: 996852493}
-  restrictionType: 0
+  restrictionType: 3
 --- !u!61 &1820595444
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -3409,7 +3409,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _image: {fileID: 1929112238}
   _graphRenderer: {fileID: 996852493}
-  restrictionType: 0
+  restrictionType: 2
 --- !u!61 &1929112237
 BoxCollider2D:
   m_ObjectHideFlags: 0
