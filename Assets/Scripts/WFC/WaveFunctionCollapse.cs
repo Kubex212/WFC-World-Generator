@@ -16,11 +16,13 @@ public class WaveFunctionCollapse
     
     private System.Random _randomEngine;
     private AlgorithmState state = AlgorithmState.Running;
+    private Tiles.TileCollection _tileset;
 
     public WaveFunctionCollapse(int width, int height, Tiles.TileCollection tileset, Graphs.UndirectedGraph graph, int randomSeed)
     {
         _board = new HashSet<int>[width, height];
         _rooms = new HashSet<int>[width, height];
+        _tileset = tileset;
         _availableRooms = new HashSet<int>(Enumerable.Range(0, graph.Vertices.Count));
 
 
@@ -104,19 +106,40 @@ public class WaveFunctionCollapse
         }
         return cell;
     }
-    private (List<int> tiles, List<int> rooms) Collapse(Vector2Int cell, int? tile = null)
+    private (List<int> tiles, List<int> rooms) Collapse(Vector2Int cell, int? tile = null, int? room = null)
     {
         var superposition = _board[cell.x, cell.y];
 
-        var states = superposition.ToList();
+        var statesToDelete = superposition.ToList();
         superposition.Clear();
 
-        var pickedState = tile ?? _randomEngine.Next(states.Count);
-        superposition.Add(states[pickedState]);
+        var pickedPosition = tile == null ? _randomEngine.Next(statesToDelete.Count) : statesToDelete.IndexOf(tile.Value);
 
-        states.RemoveAt(pickedState);
-        //TODO: collapse rooms correctly
-        return (states, _rooms[cell.x, cell.y].ToList());
+        if(pickedPosition != -1)
+        {
+            superposition.Add(statesToDelete[pickedPosition]);
+            statesToDelete.RemoveAt(pickedPosition);
+        }
+
+        if (!_tileset.tiles[superposition.First()].Walkable)
+        {
+            return (statesToDelete, _rooms[cell.x, cell.y].ToList());
+        }
+
+        var roomSuperposition = _rooms[cell.x, cell.y];
+
+        var roomStatesToDelete = roomSuperposition.ToList();
+        roomSuperposition.Clear();
+
+        var pickedRoomPosition = tile == null ? _randomEngine.Next(roomStatesToDelete.Count) : roomStatesToDelete.IndexOf(tile.Value);
+        
+        if( pickedRoomPosition != -1)
+        {
+            roomSuperposition.Add(roomStatesToDelete[pickedRoomPosition]);
+            roomStatesToDelete.RemoveAt(pickedRoomPosition);
+        }
+
+        return (statesToDelete, roomStatesToDelete);
     }
     private void Propagate(Modification modified)
     {
