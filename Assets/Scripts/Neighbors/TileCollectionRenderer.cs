@@ -11,6 +11,7 @@ using Graphs;
 using Newtonsoft.Json;
 using System.IO.Compression;
 using System;
+using UnityEngine.SceneManagement;
 
 public class TileCollectionRenderer : MonoBehaviour
 {
@@ -27,6 +28,7 @@ public class TileCollectionRenderer : MonoBehaviour
     [SerializeField] private Button _addTileButton;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _loadButton;
+    [SerializeField] private Button _backButton;
 
     [SerializeField] private Toggle _edgeTileToggle;
     [SerializeField] private Toggle _diagonalityToggle;
@@ -41,6 +43,8 @@ public class TileCollectionRenderer : MonoBehaviour
         _addTileButton.onClick.AddListener(AddButton);
         _saveButton.onClick.AddListener(Save);
         _loadButton.onClick.AddListener(Load);
+        _backButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
+
         _edgeTileToggle.onValueChanged.AddListener((v) =>
         {
             if (_selectionSlot.Selected != null) _tileCollection.edgeTile = v ? _selectionSlot.Selected : null;

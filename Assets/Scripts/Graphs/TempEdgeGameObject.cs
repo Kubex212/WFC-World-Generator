@@ -24,7 +24,7 @@ public class TempEdgeGameObject : MonoBehaviour
             return;
         }
         _lineRenderer.SetPosition(0, _from.transform.position);
-        _lineRenderer.SetPosition(1, Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        _lineRenderer.SetPosition(1, Camera.main.ScreenToWorldPoint(Input.mousePosition).ZeroZ());
         _lineRenderer.startWidth = _lineRenderer.endWidth = _thickness;
     }
 }
