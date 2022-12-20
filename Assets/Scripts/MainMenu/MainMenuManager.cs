@@ -14,7 +14,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Button _exitButton;
 
     void Start()
-    {
+    { 
         _graphsButton.onClick.AddListener(GoToGraphs);
         _neighborhoodButton.onClick.AddListener(GoToNeighborhood);
         _synthesisButton.onClick.AddListener(GoToSynthesis);
