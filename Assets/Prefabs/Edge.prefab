@@ -221,8 +221,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _lineRenderer: {fileID: 2766938784412797876}
   _meshCollider: {fileID: 1844062398207563915}
-  _baseColor: {r: 0.7924528, g: 0.03364185, b: 0.03364185, a: 1}
-  _colorWithKey: {r: 0.98564017, g: 1, b: 0, a: 1}
+  _baseColor: {r: 0.085173406, g: 0.020425411, b: 0.4811321, a: 1}
+  _colorWithKey: {r: 0.6745098, g: 0, b: 1, a: 1}
   _graphRenderer: {fileID: 0}
   _keyText: {fileID: 3209224779148224884}
   _thickness: 0.149

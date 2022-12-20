@@ -8,6 +8,7 @@ using UnityEditor;
 using System.IO;
 using UnityEngine.Events;
 using Tiles;
+using UnityEngine.SceneManagement;
 
 public class GraphRenderer : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class GraphRenderer : MonoBehaviour
     [SerializeField] private Button _addVertexButton;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _loadButton;
+    [SerializeField] private Button _backButton;
 
     public UnityEvent<VertexGameObject> onDeleteVertex;
     public UnityEvent<EdgeGameObject> onDeleteEdge;
@@ -33,6 +35,7 @@ public class GraphRenderer : MonoBehaviour
         _addVertexButton.onClick.AddListener(OnAdd);
         _saveButton.onClick.AddListener(Save);
         _loadButton.onClick.AddListener(Load);
+        _backButton.onClick.AddListener(Back);
 
         Graph = new UndirectedGraph();
         var v0 = Graph.AddVertex("v0");
@@ -299,5 +302,10 @@ public class GraphRenderer : MonoBehaviour
         _edges.Remove(edgeToDestroy);
         Graph.DeleteEdge(edgeToDestroy.from.vertex, edgeToDestroy.to.vertex);
         Destroy(edgeToDestroy.gameObject);
+    }
+
+    private void Back()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 }

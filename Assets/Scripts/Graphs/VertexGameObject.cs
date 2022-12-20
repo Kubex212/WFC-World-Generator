@@ -9,7 +9,7 @@ public class VertexGameObject : MonoBehaviour
 {
     [SerializeField] private CircleCollider2D _circleCollider;
     [SerializeField] private Color _color = Color.white;
-    [SerializeField] private Color _baseColor = Color.white;
+    [SerializeField] private Color _baseColor;
     [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private TextMeshPro _keyText;
 
@@ -22,7 +22,7 @@ public class VertexGameObject : MonoBehaviour
     void Start()
     {
         _circleCollider = GetComponent<CircleCollider2D>();
-        _color = Color.white;
+        _color = _baseColor;
         SetColor();
     }
 
