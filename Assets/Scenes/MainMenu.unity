@@ -1845,6 +1845,7 @@ MonoBehaviour:
   _synthesisButton: {fileID: 101681739}
   _authorsButton: {fileID: 1161281855}
   _exitButton: {fileID: 648074394}
+  _eventSystem: {fileID: 1196528679}
 --- !u!4 &1988942046
 Transform:
   m_ObjectHideFlags: 0

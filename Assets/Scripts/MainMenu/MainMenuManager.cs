@@ -12,19 +12,6 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Button _synthesisButton;
     [SerializeField] private Button _authorsButton;
     [SerializeField] private Button _exitButton;
-    [SerializeField] private EventSystem _eventSystem;
-    private static MainMenuManager _instance;
-
-    private void Awake()
-    {
-        if (_instance == null)
-        {
-            _instance = this;
-            DontDestroyOnLoad(this.gameObject);
-            return;
-        }
-        Destroy(this.gameObject);
-    }
 
     void Start()
     {
@@ -40,11 +27,10 @@ public class MainMenuManager : MonoBehaviour
     }
     private void GoToNeighborhood()
     {
-        SceneManager.LoadScene("Neighborhoods", LoadSceneMode.Additive);
+        SceneManager.LoadScene("Neighborhoods");
     }
-
     private void GoToSynthesis()
     {
-        SceneManager.LoadScene("WaveFunctionCollapse", LoadSceneMode.Additive);
+        SceneManager.LoadScene("WaveFunctionCollapse");
     }
 }

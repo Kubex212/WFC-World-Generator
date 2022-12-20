@@ -10,20 +10,22 @@ public class DataHolder : MonoBehaviour
     public TileCollection Tiles { get; set; } = null;
     public UndirectedGraph Graph { get; set; } = null;
 
-    // Start is called before the first frame update
-    void Start()
+    public static DataHolder Instance { get; private set; } = null;
+    void Awake()
     {
-        DontDestroyOnLoad(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(this.gameObject);
+            return;
+        }
+        Destroy(this.gameObject);
     }
-    
-    // Update is called once per frame
+
     void Update()
     {
         if (Input.GetKey(KeyCode.Q))
-            SceneManager.LoadScene("Graphs");
-        if (Input.GetKey(KeyCode.W))
-            SceneManager.LoadScene("Neighborhoods");
-        if (Input.GetKey(KeyCode.E))
-            SceneManager.LoadScene("WaveFunctionCollapse");
+            SceneManager.LoadScene("MainMenu");
+
     }
 }
