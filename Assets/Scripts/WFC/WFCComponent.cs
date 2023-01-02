@@ -83,7 +83,7 @@ public class WFCComponent : MonoBehaviour
         if (modified != null)
             foreach (var key in modified.Keys)
             {
-                _board[key.x, key.y].Remove(modified[key].tiles, modified[key].rooms);
+                _board[key.x, key.y].Remove(modified[key]);
             }
     }
 

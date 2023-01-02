@@ -19,22 +19,16 @@ public class CellComponent : MonoBehaviour
         }
         GetComponent<Image>().color = Color.red;
         GetComponent<Image>().sprite = null;
-        GetComponentInChildren<TextMeshProUGUI>().text = new StringBuilder().AppendJoin(' ',
-            Enumerable.Range(-roomCount+1, roomCount).Select((i) => $"{-i}")
-            ).ToString();
+        //GetComponentInChildren<TextMeshProUGUI>().text = new StringBuilder().AppendJoin(' ',
+        //    Enumerable.Range(-roomCount+1, roomCount).Select((i) => $"{-i}")
+        //    ).ToString();
     }
-    public void Remove(IEnumerable<int> indexes, IEnumerable<int> rooms)
+    public void Remove(IEnumerable<int> indexes)
     {
         foreach (var tile in indexes)
         {
             _superposition.Remove(tile);
         }
-        var textComponent = GetComponentInChildren<TextMeshProUGUI>();
-        textComponent.text = new StringBuilder().AppendJoin(' ', 
-            textComponent.text
-            .Split(' ')
-            .Except(rooms.Select((i) => $"{i}"))
-        ).ToString();
 
 
         GetComponent<Image>().color = Color.Lerp(Color.blue, Color.red, (_superposition.Count-1f)/(_maxPossibilities-1));
