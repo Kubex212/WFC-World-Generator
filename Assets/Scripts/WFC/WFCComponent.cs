@@ -63,7 +63,7 @@ public class WFCComponent : MonoBehaviour
                 _board[x, y].Fill(tileCollection.tiles.Count, graph.Vertices.Count);
             }
         }
-        _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed);
+        _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed, 2);
 
         WaveFunctionCollapse.Modification modified = null;
         if (tileCollection.edgeTile != null)

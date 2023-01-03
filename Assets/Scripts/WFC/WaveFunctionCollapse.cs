@@ -19,12 +19,14 @@ public class WaveFunctionCollapse
     private System.Random _randomEngine;
     private AlgorithmState state = AlgorithmState.Running;
     private Tiles.TileCollection _tileset;
+    private int _borderWidth = 2;
 
-    public WaveFunctionCollapse(int width, int height, Tiles.TileCollection tileset, Graphs.UndirectedGraph graph, int randomSeed)
+    public WaveFunctionCollapse(int width, int height, Tiles.TileCollection tileset, Graphs.UndirectedGraph graph, int randomSeed, int borderWidth)
     {
         _board = new HashSet<int>[width, height];
         _rooms = new int?[width, height];
         _tileset = tileset;
+        _borderWidth = borderWidth;
 
 
         _randomEngine = new System.Random(randomSeed);
@@ -120,6 +122,7 @@ public class WaveFunctionCollapse
                 var v = queue.Dequeue();
                 foreach (var neighbor in GetRandomizedNeighbors(v))
                 {
+                    setBoundaries(neighbor);
                     // we can enter if
                     if (!map.TryGetValue(neighbor, out var neighborNode) || // it was never visited OR
                         !neighborNode.surrounding && // it is not surrounding the center
@@ -181,7 +184,7 @@ public class WaveFunctionCollapse
             }
         } // end paths
 
-        var allPathCoords = map.Where(p => p.Value.isPath).Select(p => p.Key).ToList();
+        var allPathCoords = map.Where(p => p.Value.isPath).Select(p => p.Key - min).ToList();
 
         var unwalkableTiles = _tileset.tiles.Where(t => !t.Walkable).Select(t => t.Index).ToList();
         var modified = new Modification(allPathCoords.ToDictionary(p => p, p => unwalkableTiles));
@@ -189,7 +192,7 @@ public class WaveFunctionCollapse
         foreach(var coords in allPathCoords)
         {
             _board[coords.x, coords.y].SymmetricExceptWith(unwalkableTiles);
-            _rooms[coords.x, coords.y] = map[coords].room;
+            _rooms[coords.x, coords.y] = map[coords + min].room;
         }
 
         Propagate(modified);
@@ -213,6 +216,8 @@ public class WaveFunctionCollapse
                 yield return v + of;
         }
         IEnumerable<Vector2Int> GetRandomizedNeighbors(Vector2Int v) => GetNeighbors(v).OrderBy((k) => _randomEngine.Next());
+
+        //TODO: - customizowac dlugosc granicy
         bool checkBoundaries(Vector2Int v)
         {
             var locmin = min;
@@ -221,7 +226,7 @@ public class WaveFunctionCollapse
             locmin.y = Math.Min(min.y, v.y);
             locmax.x = Math.Max(max.x, v.x);
             locmax.y = Math.Max(max.y, v.y);
-            return locmax.x - locmin.x < _board.GetLength(0) && locmax.y - locmin.y < _board.GetLength(1);
+            return locmax.x - locmin.x < _board.GetLength(0) - _borderWidth && locmax.y - locmin.y < _board.GetLength(1) - _borderWidth;
         }
         void setBoundaries(Vector2Int v)
         {
