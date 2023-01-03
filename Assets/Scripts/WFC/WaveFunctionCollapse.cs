@@ -12,6 +12,7 @@ public class WaveFunctionCollapse
 {
     private List<List<(Vector2Int, int)>> _neighborhoods = new List<List<(Vector2Int, int)>>();
     private HashSet<int>[,] _board;
+    private int?[,] _rooms;
     private Stack<Modification> _history = new Stack<Modification>();
     private EntropyQueue _queue;
     
@@ -22,6 +23,7 @@ public class WaveFunctionCollapse
     public WaveFunctionCollapse(int width, int height, Tiles.TileCollection tileset, Graphs.UndirectedGraph graph, int randomSeed)
     {
         _board = new HashSet<int>[width, height];
+        _rooms = new int?[width, height];
         _tileset = tileset;
 
 
@@ -47,9 +49,9 @@ public class WaveFunctionCollapse
                 else
                     foreach (var tile in tileset.tiles[i].Neighbors[dir])
                         _neighborhoods[i].Add((coord, tile.Index));
-
             }
         }
+
     }
     public Modification EnforceEdgeRules(int edgeTile)
     {
@@ -68,14 +70,12 @@ public class WaveFunctionCollapse
         public PathingNode parent = null;
         public int? room = null;
         public int length;
-        public Vector2Int location;
         public bool surrounding = false;
         public bool blocked = false;
+        public bool isPath = false;
     }
     public Modification SeedRooms(Graphs.UndirectedGraph graph)
     {
-        var modified = new Modification();
-
         var roomLocations = new Dictionary<int, Vector2Int>();
         var map = new Dictionary<Vector2Int, PathingNode>();
         Vector2Int min = new(int.MaxValue, int.MaxValue), max = new(int.MinValue, int.MinValue);
@@ -90,7 +90,7 @@ public class WaveFunctionCollapse
             {
                 room = i,
                 length = 0,
-                location = roomLocations[i]
+                isPath = true
             };
             setBoundaries(roomLocations[i]);
             foreach (var n in GetNeighbors(roomLocations[i]))
@@ -98,77 +98,102 @@ public class WaveFunctionCollapse
                 map[n] = new PathingNode()
                 {
                     room = i,
-                    length = -1,
-                    location = n,
-                    surrounding = true
+                    length = 1,
+                    surrounding = true,
+                    parent = map[roomLocations[i]]
                 };
                 setBoundaries(n);
             }
         }
         for (int i = 0; i < graph.Vertices.Count; i++)
         {
-            var queue = new Queue<Vector2Int>();
             var targets = new HashSet<int>(
                 graph.Edges[graph.Vertices[i]].Keys
                 .Select((v) => graph.Vertices.IndexOf(v))
                 .Where((a) => a > i)
             );
+            var surroundings = GetNeighbors(roomLocations[i]);
+            var queue = new Queue<Vector2Int>(surroundings);
             var paths = new List<PathingNode>();
-            queue.Enqueue(roomLocations[i]);
             while (queue.Count > 0)
             {
                 var v = queue.Dequeue();
                 foreach (var neighbor in GetRandomizedNeighbors(v))
                 {
-                    if (!map.TryGetValue(neighbor, out var neighborNode) ||
-                        neighborNode.surrounding == true && neighborNode.room.Value == i)
+                    // we can enter if
+                    if (!map.TryGetValue(neighbor, out var neighborNode) || // it was never visited OR
+                        !neighborNode.surrounding && // it is not surrounding the center
+                        !neighborNode.blocked && // it is not next to an existing path
+                        !neighborNode.isPath && // it is not an existing path
+                        neighborNode.room.Value != i) // we didn't visit it in current BFS
                     {
                         map[neighbor] = new PathingNode()
                         {
                             parent = map[v],
                             length = map[v].length + 1,
-                            location = neighbor
+                            room = i
                         };
                         queue.Enqueue(neighbor);
                     }
-                    else if (targets.Contains(neighborNode.room.Value))
+                    else if (!neighborNode.blocked && targets.Contains(neighborNode.room.Value) && (neighborNode.isPath || neighborNode.surrounding))
                     {
                         paths.Add(map[v]);
                         targets.Remove(neighborNode.room.Value);
                         break;
                     }
                 }
+                
             } // end BFS
+            if (targets.Count > 0)
+            {
+                // could not find all the paths
+                return null;
+            }
+
             foreach (var path in paths)
             {
                 PathingNode v = path;
                 while(v.length>path.length/2)
                 {
+                    v.isPath = true;
                     v.parent.room = v.room;
                     v = v.parent;
                 }
-                while (v.length > 0)
+                while(v.length != 0)
                 {
+                    v.isPath = true;
                     v = v.parent;
-                    foreach (var neighbor in GetNeighbors(v.location))
-                    {
-                        if (!map.TryGetValue(neighbor, out var neighborNode) || neighborNode.surrounding)
-                            map[neighbor] = new PathingNode()
-                            {
-                                blocked = true,
-                                location = neighbor
-                            };
-                    }
+                }
+            }
+
+            var pathCoords = map.Where(p => p.Value.room == i && !p.Value.surrounding && p.Value.isPath).ToList();
+
+            foreach (var pair in pathCoords)
+            {
+                var coords = pair.Key;
+                var node = pair.Value;
+
+                foreach(var neighbor in GetNeighbors(coords))
+                {
+                    if(!map.TryGetValue(neighbor, out var n) || !n.isPath)
+                        map[neighbor] = new PathingNode() { blocked = true };
                 }
             }
         } // end paths
 
+        var allPathCoords = map.Where(p => p.Value.isPath).Select(p => p.Key).ToList();
 
-        ///xxxxx////b////////
-        //xAaaaabbbbBb//////
-        ///xxxxxc///b//////
-        ////////C/////////
+        var unwalkableTiles = _tileset.tiles.Where(t => !t.Walkable).Select(t => t.Index).ToList();
+        var modified = new Modification(allPathCoords.ToDictionary(p => p, p => unwalkableTiles));
 
+        foreach(var coords in allPathCoords)
+        {
+            _board[coords.x, coords.y].SymmetricExceptWith(unwalkableTiles);
+            _rooms[coords.x, coords.y] = map[coords].room;
+        }
+
+        Propagate(modified);
+        // TO DO: ¿eby nie wychodzi³o
         return modified;
 
         IEnumerable<Vector2Int> GetNeighbors(Vector2Int v)
@@ -206,16 +231,6 @@ public class WaveFunctionCollapse
             max.y = Math.Max(max.y, v.y);
         }
     }
-
-    // TODO: rozsiewanie pokojow
-    // TODO: bfs do sasiadow
-    //  losowa kolejnosc brania sasiadow
-    // queue<int,int>
-    // dict<(int,int), node>
-    // int maxy, maxx, minx, miny
-    // TODO: dzielenie sciezki na pol
-    // TODO: blokowanie wokol sciezki
-    // TODO: zamiana tego na mape z superpozycja
 
     public Modification Next()
     {
@@ -358,7 +373,12 @@ public class WaveFunctionCollapse
         }
     }
 
-    public class Modification : Dictionary<Vector2Int, List<int>> { }
+    public class Modification : Dictionary<Vector2Int, List<int>> 
+    { 
+        public Modification(Dictionary<Vector2Int, List<int>> dic) : base(dic)
+        { }
+        public Modification() : base() { }
+    }
 
     private class EntropyQueue
     {

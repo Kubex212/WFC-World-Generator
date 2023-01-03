@@ -69,6 +69,19 @@ public class WFCComponent : MonoBehaviour
         if (tileCollection.edgeTile != null)
             modified = _algorithm.EnforceEdgeRules(tileCollection.edgeTile.Index);
         UpdateVisuals(modified);
+
+        modified = null;
+        for (int i = 0; i < 100; i++)
+        {
+            modified = _algorithm.SeedRooms(graph);
+            if (modified != null)
+                break;
+        }
+
+        if (modified == null)
+            throw new ArgumentException("Could not seed map with specified input graph");
+        UpdateVisuals(modified);
+
         _randomSeed++;
     }
     private void Next()
