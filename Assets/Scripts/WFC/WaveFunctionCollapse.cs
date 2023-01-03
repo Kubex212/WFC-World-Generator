@@ -85,7 +85,7 @@ public class WaveFunctionCollapse
         for (int i = 0; i<graph.Vertices.Count; i++)
         {
             do
-                roomLocations[i] = new Vector2Int(_randomEngine.Next(_board.GetLength(0)), _randomEngine.Next(_board.GetLength(1)));
+                roomLocations[i] = new Vector2Int(_randomEngine.Next(_board.GetLength(0) - _borderWidth), _randomEngine.Next(_board.GetLength(1) - _borderWidth));
             while (map.TryGetValue(roomLocations[i], out _));
 
             map[roomLocations[i]] = new PathingNode()
@@ -187,7 +187,7 @@ public class WaveFunctionCollapse
         var allPathCoords = map.Where(p => p.Value.isPath).Select(p => p.Key - min).ToList();
 
         var unwalkableTiles = _tileset.tiles.Where(t => !t.Walkable).Select(t => t.Index).ToList();
-        var modified = new Modification(allPathCoords.ToDictionary(p => p, p => unwalkableTiles));
+        var modified = new Modification(allPathCoords.ToDictionary(p => p, p => new List<int>(unwalkableTiles)));
 
         foreach(var coords in allPathCoords)
         {
