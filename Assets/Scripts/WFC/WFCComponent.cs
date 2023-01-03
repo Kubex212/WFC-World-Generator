@@ -60,7 +60,7 @@ public class WFCComponent : MonoBehaviour
         {
             for (int y = 0; y < _height; y++)
             {
-                _board[x, y].Fill(tileCollection.tiles.Count, graph.Vertices.Count);
+                _board[x, y].Fill(tileCollection.tiles.Count);
             }
         }
         _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed, 2);
@@ -94,10 +94,17 @@ public class WFCComponent : MonoBehaviour
     private void UpdateVisuals(WaveFunctionCollapse.Modification modified)
     {
         if (modified != null)
-            foreach (var key in modified.Keys)
+        {
+            foreach (var key in modified.Tiles.Keys)
             {
-                _board[key.x, key.y].Remove(modified[key]);
+                _board[key.x, key.y].Remove(modified.Tiles[key]);
             }
+            foreach (var key in modified.Rooms.Keys)
+            {
+                _board[key.x, key.y].SetRoom(modified.Rooms[key]);
+            }
+        }
+
     }
 
     private Vector3 GetPos(int x, int y, int size, float pixSize)

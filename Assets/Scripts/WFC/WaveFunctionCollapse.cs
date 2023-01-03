@@ -58,9 +58,10 @@ public class WaveFunctionCollapse
     public Modification EnforceEdgeRules(int edgeTile)
     {
         var modified = new Modification();
+
         foreach (var cell in EdgeCells)
         {
-            modified.Add(cell, Collapse(cell, edgeTile));
+            modified.Tiles.Add(cell, Collapse(cell, edgeTile));
         }
         Propagate(modified);
 
@@ -140,6 +141,7 @@ public class WaveFunctionCollapse
                     }
                     else if (!neighborNode.blocked && targets.Contains(neighborNode.room.Value) && (neighborNode.isPath || neighborNode.surrounding))
                     {
+                        map[v].room = neighborNode.room;
                         paths.Add(map[v]);
                         targets.Remove(neighborNode.room.Value);
                         break;
@@ -187,7 +189,10 @@ public class WaveFunctionCollapse
         var allPathCoords = map.Where(p => p.Value.isPath).Select(p => p.Key - min).ToList();
 
         var unwalkableTiles = _tileset.tiles.Where(t => !t.Walkable).Select(t => t.Index).ToList();
-        var modified = new Modification(allPathCoords.ToDictionary(p => p, p => new List<int>(unwalkableTiles)));
+        var modified = new Modification(
+            allPathCoords.ToDictionary(p => p, p => new List<int>(unwalkableTiles)),
+            allPathCoords.ToDictionary(p => p, p => map[p + min].room.Value)
+            );
 
         foreach(var coords in allPathCoords)
         {
@@ -246,13 +251,33 @@ public class WaveFunctionCollapse
 
         var collapsedStates = Collapse(cell);
 
-        var modified = new Modification
+        var modified = new Modification(new()
         {
-            { cell, collapsedStates }
-        };
+            [cell] = collapsedStates 
+        });
 
         Propagate(modified);
         _history.Push(modified);
+
+        bool changed = false;
+
+        do
+        {
+            changed = false;
+            foreach (var coords in modified.Tiles.Keys.Where(t => !_rooms[t.x, t.y].HasValue && _board[t.x, t.y].All(p => _tileset.tiles[p].Walkable)))
+            {
+                foreach (var n in GetAdjacentCells(coords))
+                {
+                    if (_rooms[n.x, n.y].HasValue)
+                    {
+                        _rooms[coords.x, coords.y] = modified.Rooms[coords] = _rooms[n.x, n.y].Value;
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+        } while(changed);
+
         return modified;
     }
     private Vector2Int Observe()
@@ -290,7 +315,7 @@ public class WaveFunctionCollapse
         if(pickedPosition != -1)
         {
             superposition.Add(statesToDelete[pickedPosition]);
-            statesToDelete.RemoveAt(pickedPosition);
+            statesToDelete.RemoveAt(pickedPosition); 
         }
 
         return statesToDelete;
@@ -298,18 +323,18 @@ public class WaveFunctionCollapse
     private void Propagate(Modification modified)
     {
         var s = new Stack<(Vector2Int cell, int tile)>();
-        foreach (var cell in modified.Keys) // begin by excluding all tiles modified
-            foreach (var tile in modified[cell])
+        foreach (var cell in modified.Tiles.Keys) // begin by excluding all tiles modified
+            foreach (var tile in modified.Tiles[cell])
                 s.Push((cell, tile));
         while (s.Count > 0)
         {
             var point = s.Pop();
-            var neighbors = GetNeighbors(point);
+            var neighbors = GetInfluencedTiles(point);
             foreach ((Vector2Int cell, int tile) n in neighbors) // loop through all possible neighboring tiles
             {
                 if (_board[n.cell.x, n.cell.y].Contains(n.tile)) // if tile not excluded yet, visit
                 {
-                    var nneighbors = GetNeighbors(n);
+                    var nneighbors = GetInfluencedTiles(n);
                     if (nneighbors.Any( // if tile is still supported by anything else, skip
                         ((Vector2Int cell, int tile) p)
                             => p.cell == point.cell &&
@@ -319,14 +344,14 @@ public class WaveFunctionCollapse
                         continue;
 
                     _board[n.cell.x, n.cell.y].Remove(n.tile); // exclude tile if not suported by anything anymore
-                    if (!modified.ContainsKey(n.cell))
-                        modified.Add(n.cell, new());
-                    modified[n.cell].Add(n.tile);
+                    if (!modified.Tiles.ContainsKey(n.cell))
+                        modified.Tiles.Add(n.cell, new());
+                    modified.Tiles[n.cell].Add(n.tile);
                     s.Push(n);
                 }
             }
         }
-        _queue.Notify(modified.First().Key);
+        _queue.Notify(modified.Tiles.First().Key);
     }
     private bool InBounds(Vector2Int cell)
     {
@@ -335,15 +360,24 @@ public class WaveFunctionCollapse
             cell.x < _board.GetLength(0) &&
             cell.y < _board.GetLength(1);
     }
-    private List<(Vector2Int, int)> GetNeighbors((Vector2Int c, int t) point)
+    
+    private IEnumerable<Vector2Int> GetAdjacentCells(Vector2Int v)
     {
-        return _neighborhoods[point.t].Select(
-            ((Vector2Int c, int t) p)
-            => (p.c + point.c, p.t)
-            ).Where(
-            ((Vector2Int c, int t) p)
-            => InBounds(p.c)
-            ).ToList();
+        yield return v + new Vector2Int(0, 1);
+        yield return v + new Vector2Int(-1, 0);
+        yield return v + new Vector2Int(1, 0);
+        yield return v + new Vector2Int(0, -1);
+    }
+
+    private List<(Vector2Int, int)> GetInfluencedTiles((Vector2Int c, int t) point)
+    {
+        return _neighborhoods[point.t].Where(
+            ((Vector2Int c, int t) p) => !_tileset.diagonal || p.c.sqrMagnitude == 1)
+            .Select(
+            ((Vector2Int c, int t) p) => (p.c + point.c, p.t))
+            .Where(
+            ((Vector2Int c, int t) p) => InBounds(p.c))
+            .ToList();
     }
 
     private Vector2Int DirectionEnum(Tiles.Direction dir)
@@ -368,21 +402,31 @@ public class WaveFunctionCollapse
             for (int x = 0; x < _board.GetLength(0); x++)
             {
                 yield return new Vector2Int(x, 0);
-                yield return new Vector2Int(x, _board.GetLength(0)-1);
+                yield return new Vector2Int(x, _board.GetLength(1)-1);
             }
             for(int y = 1; y<_board.GetLength(1)-1; y++)
             {
                 yield return new Vector2Int(0, y);
-                yield return new Vector2Int(_board.GetLength(1) - 1, y);
+                yield return new Vector2Int(_board.GetLength(0) - 1, y);
             }
         }
     }
 
-    public class Modification : Dictionary<Vector2Int, List<int>> 
+    public class Modification
     { 
-        public Modification(Dictionary<Vector2Int, List<int>> dic) : base(dic)
-        { }
-        public Modification() : base() { }
+        public Dictionary<Vector2Int, int> Rooms { get; set; }
+        public Dictionary<Vector2Int, List<int>> Tiles { get; set; }
+
+        public Modification(Dictionary<Vector2Int, List<int>> tiles, Dictionary<Vector2Int, int> rooms = null)
+        {
+            Tiles = tiles;
+            Rooms = rooms ?? new();
+        }
+        public Modification()
+        {
+            Tiles = new();
+            Rooms = new();
+        }
     }
 
     private class EntropyQueue

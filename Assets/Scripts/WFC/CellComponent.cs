@@ -10,7 +10,7 @@ public class CellComponent : MonoBehaviour
 {
     private HashSet<int> _superposition = new HashSet<int>();
     private int _maxPossibilities;
-    public void Fill(int tileCount, int roomCount)
+    public void Fill(int tileCount)
     {
         _maxPossibilities = tileCount;
         for (int i = 0; i < tileCount; i++)
@@ -19,9 +19,7 @@ public class CellComponent : MonoBehaviour
         }
         GetComponent<Image>().color = Color.red;
         GetComponent<Image>().sprite = null;
-        //GetComponentInChildren<TextMeshProUGUI>().text = new StringBuilder().AppendJoin(' ',
-        //    Enumerable.Range(-roomCount+1, roomCount).Select((i) => $"{-i}")
-        //    ).ToString();
+        GetComponentInChildren<TextMeshProUGUI>().text = "?";
     }
     public void Remove(IEnumerable<int> indexes)
     {
@@ -38,6 +36,12 @@ public class CellComponent : MonoBehaviour
             GetComponent<Image>().sprite = SpriteAtlas.Atlas[_superposition.First()];
             GetComponent<Image>().color = Color.white;
         }
+    }
+
+
+    public void SetRoom(int? room)
+    {
+        GetComponentInChildren<TextMeshProUGUI>().text = room?.ToString(/* ?? */) ?? "?"; // ??
     }
 
 }
