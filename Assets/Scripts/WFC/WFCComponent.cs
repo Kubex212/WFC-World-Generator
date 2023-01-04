@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using Tiles;
 using UnityEngine;
@@ -97,11 +98,11 @@ public class WFCComponent : MonoBehaviour
         {
             foreach (var key in modified.Tiles.Keys)
             {
-                _board[key.x, key.y].Remove(modified.Tiles[key]);
+                _board[key.x, key.y].Remove(modified.Tiles[key].Select(t => _algorithm.OriginTiles[t].tile));
             }
-            foreach (var key in modified.Rooms.Keys)
+            foreach (var key in modified.Tiles.Keys)
             {
-                _board[key.x, key.y].SetRoom(modified.Rooms[key]);
+                //_board[key.x, key.y].SetRoom(_algorithm.OriginTiles[modified.Tiles[key]].room);
             }
         }
 
