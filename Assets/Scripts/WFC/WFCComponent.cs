@@ -61,7 +61,7 @@ public class WFCComponent : MonoBehaviour
         {
             for (int y = 0; y < _height; y++)
             {
-                _board[x, y].Fill(tileCollection.tiles.Count);
+                _board[x, y].Fill(tileCollection.tiles.Count + tileCollection.tiles.Count(t => t.Walkable)*(graph.Vertices.Count-1) );
             }
         }
         _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed, 2);
@@ -71,17 +71,17 @@ public class WFCComponent : MonoBehaviour
             modified = _algorithm.EnforceEdgeRules(tileCollection.edgeTile.Index);
         UpdateVisuals(modified);
 
-        modified = null;
-        for (int i = 0; i < 100; i++)
-        {
-            modified = _algorithm.SeedRooms(graph);
-            if (modified != null)
-                break;
-        }
+        //modified = null;
+        //for (int i = 0; i < 100; i++)
+        //{
+        //    modified = _algorithm.SeedRooms(graph);
+        //    if (modified != null)
+        //        break;
+        //}
 
-        if (modified == null)
-            throw new ArgumentException("Could not seed map with specified input graph");
-        UpdateVisuals(modified);
+        //if (modified == null)
+        //    throw new ArgumentException("Could not seed map with specified input graph");
+        //UpdateVisuals(modified);
 
         _randomSeed++;
     }
@@ -98,7 +98,7 @@ public class WFCComponent : MonoBehaviour
         {
             foreach (var key in modified.Tiles.Keys)
             {
-                _board[key.x, key.y].Remove(modified.Tiles[key].Select(t => _algorithm.OriginTiles[t].tile));
+                _board[key.x, key.y].Remove(modified.Tiles[key]);
             }
             foreach (var key in modified.Tiles.Keys)
             {

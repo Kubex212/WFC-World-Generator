@@ -7,10 +7,11 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
 using UnityEngine.SocialPlatforms;
+using Unity.VisualScripting;
 
 public class WaveFunctionCollapse
 {
-    public List<(int tile, int? room)> OriginTiles { get; private set; } = new(); 
+    public List<(int tile, int? room, int index)> OriginTiles { get; private set; } = new(); 
 
     private List<List<(Vector2Int, int)>> _neighborhoods = new List<List<(Vector2Int, int)>>();
     private HashSet<int>[,] _board;
@@ -34,11 +35,6 @@ public class WaveFunctionCollapse
         _randomEngine = new System.Random(randomSeed);
         _queue = new EntropyQueue(_board, _randomEngine);
 
-        for (int x = 0; x < _board.GetLength(0); x++)
-            for (int y = 0; y < _board.GetLength(1); y++)
-            {
-                _board[x, y] = new HashSet<int>(Enumerable.Range(0, tileset.tiles.Count));
-            }
 
         for (int i = 0; i < tileset.tiles.Count; i++)
         {
@@ -46,14 +42,21 @@ public class WaveFunctionCollapse
             {
                 for(int j = 0; j < graph.Vertices.Count; j++)
                 {
-                    OriginTiles.Add((i, j));
+                    OriginTiles.Add((i, j, OriginTiles.Count));
                 }
             }
             else
             {
-                OriginTiles.Add((i, null));
+                OriginTiles.Add((i, null, OriginTiles.Count));
             }
         }
+        SpriteAtlas.Atlas = OriginTiles.Select((tr) => SpriteAtlas.Atlas[tr.tile]).ToArray();
+
+        for (int x = 0; x < _board.GetLength(0); x++)
+            for (int y = 0; y < _board.GetLength(1); y++)
+            {
+                _board[x, y] = new HashSet<int>(Enumerable.Range(0, OriginTiles.Count));
+            }
 
         for (int i = 0; i < OriginTiles.Count; i++)
         {
@@ -66,7 +69,8 @@ public class WaveFunctionCollapse
                         _neighborhoods[i].Add((coord, index));
                 else
                     foreach (var tile in tileset.tiles[OriginTiles[i].tile].Neighbors[dir])
-                        _neighborhoods[i].Add((coord, tile.Index));
+                        foreach (var originTile in OriginTiles.Where(t => t.tile == tile.Index))
+                            _neighborhoods[i].Add((coord, originTile.index));
             }
         }
 
@@ -77,7 +81,7 @@ public class WaveFunctionCollapse
 
         foreach (var cell in EdgeCells)
         {
-            modified.Tiles.Add(cell, Collapse(cell, OriginTiles.IndexOf((edgeTile, null))));
+            modified.Tiles.Add(cell, Collapse(cell, OriginTiles.First(t => t.tile == edgeTile).index));
         }
         Propagate(modified);
 
@@ -90,19 +94,24 @@ public class WaveFunctionCollapse
         public int? room = null;
         public int length;
         public bool surrounding = false;
-        public bool blocked = false;
         public bool isPath = false;
     }
     public Modification SeedRooms(Graphs.UndirectedGraph graph)
     {
         var roomLocations = new Dictionary<int, Vector2Int>();
         var map = new Dictionary<Vector2Int, PathingNode>();
-        Vector2Int min = new(int.MaxValue, int.MaxValue), max = new(int.MinValue, int.MinValue);
+
+        var unwalkableTiles = OriginTiles.Where(t => !t.room.HasValue).Select(t => OriginTiles.IndexOf(t)).ToList();
+        var walkableTiles = OriginTiles.Where(t => t.room.HasValue).Select(t => OriginTiles.IndexOf(t)).ToList();
+
+        var modified = new Modification();
 
         for (int i = 0; i<graph.Vertices.Count; i++)
         {
             do
-                roomLocations[i] = new Vector2Int(_randomEngine.Next(_board.GetLength(0) - _borderWidth - 1), _randomEngine.Next(_board.GetLength(1) - _borderWidth - 1));
+                roomLocations[i] = new Vector2Int(
+                    _randomEngine.Next(_board.GetLength(0) - (_borderWidth + 1) * 2) + _borderWidth + 1,
+                    _randomEngine.Next(_board.GetLength(1) - (_borderWidth + 1) * 2) + _borderWidth + 1);
             while (map.TryGetValue(roomLocations[i], out _));
 
             map[roomLocations[i]] = new PathingNode()
@@ -111,7 +120,6 @@ public class WaveFunctionCollapse
                 length = 0,
                 isPath = true
             };
-            setBoundaries(roomLocations[i]);
             foreach (var n in GetNeighbors(roomLocations[i]))
             {
                 map[n] = new PathingNode()
@@ -121,7 +129,6 @@ public class WaveFunctionCollapse
                     surrounding = true,
                     parent = map[roomLocations[i]]
                 };
-                setBoundaries(n);
             }
         }
         for (int i = 0; i < graph.Vertices.Count; i++)
@@ -139,13 +146,12 @@ public class WaveFunctionCollapse
                 var v = queue.Dequeue();
                 foreach (var neighbor in GetRandomizedNeighbors(v))
                 {
-                    setBoundaries(neighbor);
+                    var visited = map.TryGetValue(neighbor, out var neighborNode);
+
                     // we can enter if
-                    if (!map.TryGetValue(neighbor, out var neighborNode) || // it was never visited OR
-                        !neighborNode.surrounding && // it is not surrounding the center
-                        !neighborNode.blocked && // it is not next to an existing path
-                        !neighborNode.isPath && // it is not an existing path
-                        neighborNode.room.Value != i) // we didn't visit it in current BFS
+                    if (_board[neighbor.x, neighbor.y].Any(t => OriginTiles[t].room == i) &&
+                        (!visited ||
+                        (neighborNode.room != i && !neighborNode.isPath && !neighborNode.surrounding)))
                     {
                         map[neighbor] = new PathingNode()
                         {
@@ -155,7 +161,9 @@ public class WaveFunctionCollapse
                         };
                         queue.Enqueue(neighbor);
                     }
-                    else if (!neighborNode.blocked && targets.Contains(neighborNode.room.Value) && (neighborNode.isPath || neighborNode.surrounding))
+                    else if (visited &&
+                        targets.Contains(neighborNode.room.Value) &&
+                        (neighborNode.isPath || neighborNode.surrounding))
                     {
                         map[v].room = neighborNode.room;
                         paths.Add(map[v]);
@@ -186,77 +194,51 @@ public class WaveFunctionCollapse
                     v = v.parent;
                 }
             }
-
+            
             var pathCoords = map.Where(p => p.Value.room == i && !p.Value.surrounding && p.Value.isPath).ToList();
-
-            foreach (var pair in pathCoords)
+            // collapse to room i
+            foreach (var coord in pathCoords)
             {
-                var coords = pair.Key;
-                var node = pair.Value;
-
-                foreach(var neighbor in GetNeighbors(coords))
-                {
-                    if(!map.TryGetValue(neighbor, out var n) || !n.isPath)
-                        map[neighbor] = new PathingNode() { blocked = true };
-                }
+                if (!modified.Tiles.ContainsKey(coord.Key))
+                    modified.Tiles.Add(coord.Key, new());
+                modified.Tiles[coord.Key].AddRange(Collapse(coord.Key, walkableTiles.Where(t => OriginTiles[t].room == i)));
             }
+            // propagate
+            Propagate(modified);
         } // end paths
 
-        var allPathCoords = map.Where(p => p.Value.isPath).Select(p => p.Key - min).ToList();
+        //var allPathCoords = map.Where(p => p.Value.isPath).Select(p => p.Key).ToList();
 
-        var unwalkableTiles = OriginTiles.Where(t => !t.room.HasValue).Select(t => OriginTiles.IndexOf(t)).ToList();
-        var modified = new Modification(
-            allPathCoords.ToDictionary(p => p, p => new List<int>(unwalkableTiles)),
-            allPathCoords.ToDictionary(p => p, p => map[p + min].room.Value)
-            );
 
-        foreach(var coords in allPathCoords)
-        {
-            _board[coords.x, coords.y].SymmetricExceptWith(unwalkableTiles);
-            _rooms[coords.x, coords.y] = map[coords + min].room;
-        }
+        //foreach(var coords in allPathCoords)
+        //{
+        //    _board[coords.x, coords.y].SymmetricExceptWith(unwalkableTiles);
+        //    _rooms[coords.x, coords.y] = map[coords].room;
+        //}
 
-        Propagate(modified);
-        //FloodFillRoom(modified);
-        // TO DO: ¿eby nie wychodzi³o
+        //Propagate(modified);
+
         return modified;
 
         IEnumerable<Vector2Int> GetNeighbors(Vector2Int v)
         {
             Vector2Int of;
             of = new Vector2Int(-1, 0);
-            if (checkBoundaries(v + of))
+            if (InBounds(v + of))
                 yield return v + of;
             of = new Vector2Int(0, -1);
-            if (checkBoundaries(v + of))
+            if (InBounds(v + of))
                 yield return v + of;
             of = new Vector2Int(1, 0);
-            if (checkBoundaries(v + of))
+            if (InBounds(v + of))
                 yield return v + of;
             of = new Vector2Int(0, 1);
-            if (checkBoundaries(v + of))
+            if (InBounds(v + of))
                 yield return v + of;
         }
         IEnumerable<Vector2Int> GetRandomizedNeighbors(Vector2Int v) => GetNeighbors(v).OrderBy((k) => _randomEngine.Next());
 
         //TODO: - customizowac dlugosc granicy
-        bool checkBoundaries(Vector2Int v)
-        {
-            var locmin = min;
-            var locmax = max;
-            locmin.x = Math.Min(min.x, v.x);
-            locmin.y = Math.Min(min.y, v.y);
-            locmax.x = Math.Max(max.x, v.x);
-            locmax.y = Math.Max(max.y, v.y);
-            return locmax.x - locmin.x < _board.GetLength(0) - _borderWidth && locmax.y - locmin.y < _board.GetLength(1) - _borderWidth;
-        }
-        void setBoundaries(Vector2Int v)
-        {
-            min.x = Math.Min(min.x, v.x);
-            min.y = Math.Min(min.y, v.y);
-            max.x = Math.Max(max.x, v.x);
-            max.y = Math.Max(max.y, v.y);
-        }
     }
 
     public Modification Next()
@@ -338,7 +320,19 @@ public class WaveFunctionCollapse
         }
         return cell;
     }
-    private List<int> Collapse(Vector2Int cell, int? tile = null, int? room = null)
+    private List<int> Collapse(Vector2Int cell, IEnumerable<int> tiles)
+    {
+        var superposition = _board[cell.x, cell.y];
+
+        var statesToDelete = superposition.Except(tiles).ToList();
+        var range = tiles.Where(t => superposition.Contains(t));
+
+        superposition.Clear();
+        superposition.AddRange(range);
+
+        return statesToDelete;
+    }
+    private List<int> Collapse(Vector2Int cell, int? tile = null)
     {
         var superposition = _board[cell.x, cell.y];
 
@@ -417,7 +411,7 @@ public class WaveFunctionCollapse
     private List<(Vector2Int, int)> GetInfluencedTiles((Vector2Int c, int t) point)
     {
         return _neighborhoods[point.t].Where(
-            ((Vector2Int c, int t) p) => !_tileset.diagonal || p.c.sqrMagnitude == 1)
+            ((Vector2Int c, int t) p) => _tileset.diagonal || p.c.sqrMagnitude == 1)
             .Select(
             ((Vector2Int c, int t) p) => (p.c + point.c, p.t))
             .Where(

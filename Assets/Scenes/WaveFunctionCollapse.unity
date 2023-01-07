@@ -1179,8 +1179,8 @@ MonoBehaviour:
   _retryButton: {fileID: 1650141682}
   _cellPrefab: {fileID: 7793470505397479047, guid: db00b28dc6cd72545854c6b2c4f1420a, type: 3}
   _randomSeed: 2145
-  _width: 20
-  _height: 20
+  _width: 30
+  _height: 30
 --- !u!224 &1978407337
 RectTransform:
   m_ObjectHideFlags: 0
