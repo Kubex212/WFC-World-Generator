@@ -23,7 +23,10 @@ namespace Graphs
                 return result.Distinct().ToList();
             }
         }
-
+        public bool CheckEdge(int a, int b)
+        {
+            return Edges[Vertices[a]].ContainsKey(Vertices[b]);
+        }
         public UndirectedGraph()
         {
 

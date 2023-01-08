@@ -33,7 +33,8 @@ public class CellComponent : MonoBehaviour
 
         if (_superposition.Count == 1)
         {
-            GetComponent<Image>().sprite = SpriteAtlas.Atlas[_superposition.First()];
+            var sp = GetComponent<Image>().sprite = SpriteAtlas.Atlas[_superposition.First()];
+            SetRoom(_superposition.First() - SpriteAtlas.Atlas.ToList().IndexOf(sp));
             GetComponent<Image>().color = Color.white;
         }
     }
