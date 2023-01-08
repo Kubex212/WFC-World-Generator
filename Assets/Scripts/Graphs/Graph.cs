@@ -192,7 +192,6 @@ namespace Graphs
     public class Edge
     {
         public int? Key { get; set; }
-
     }
 
     public class ExportObject

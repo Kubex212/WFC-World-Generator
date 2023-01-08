@@ -57,11 +57,14 @@ public class WFCComponent : MonoBehaviour
         var data = FindObjectOfType<DataHolder>();
         var tileCollection = data.Tiles;
         var graph = data.Graph;
+
+        var totalPossibilities = tileCollection.tiles.Count + tileCollection.tiles.Count(t => t.Walkable) * (graph.Vertices.Count + graph.EdgeList.Count - 1);
+
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
-                _board[x, y].Fill(tileCollection.tiles.Count + tileCollection.tiles.Count(t => t.Walkable)*(graph.Vertices.Count-1) );
+                _board[x, y].Fill(totalPossibilities);
             }
         }
         _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed, 2);
