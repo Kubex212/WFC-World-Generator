@@ -25,6 +25,7 @@ public class WFCComponent : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        _goBackButton.onClick.AddListener(Back);
         _goForwardButton.onClick.AddListener(Next);
         _retryButton.onClick.AddListener(Init);
         _board = new CellComponent[_width, _height];
@@ -88,6 +89,14 @@ public class WFCComponent : MonoBehaviour
 
         _randomSeed++;
     }
+
+    private void Back()
+    {
+        var modified = _algorithm.Undo();
+
+        UndoVisuals(modified);
+    }
+
     private void Next()
     {
         var modified = _algorithm.Next();
@@ -103,12 +112,19 @@ public class WFCComponent : MonoBehaviour
             {
                 _board[key.x, key.y].Remove(modified.Tiles[key]);
             }
-            foreach (var key in modified.Tiles.Keys)
-            {
-                //_board[key.x, key.y].SetRoom(_algorithm.OriginTiles[modified.Tiles[key]].room);
-            }
         }
 
+    }
+
+    private void UndoVisuals(WaveFunctionCollapse.Modification modified)
+    {
+        if (modified != null)
+        {
+            foreach (var key in modified.Tiles.Keys)
+            {
+                _board[key.x, key.y].Add(modified.Tiles[key]);
+            }
+        }
     }
 
     private Vector3 GetPos(int x, int y, int size, float pixSize)

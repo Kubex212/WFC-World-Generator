@@ -23,22 +23,32 @@ public class CellComponent : MonoBehaviour
     }
     public void Remove(IEnumerable<int> indexes)
     {
-        foreach (var tile in indexes)
-        {
-            _superposition.Remove(tile);
-        }
+        _superposition.ExceptWith(indexes);
 
+        SetVisuals();
+    }
 
-        GetComponent<Image>().color = Color.Lerp(Color.blue, Color.red, (_superposition.Count-1f)/(_maxPossibilities-1));
+    public void Add(IEnumerable<int> indexes)
+    {
+        _superposition.UnionWith(indexes);
 
+        SetVisuals();
+    }
+
+    private void SetVisuals()
+    {
         if (_superposition.Count == 1)
         {
             var sp = GetComponent<Image>().sprite = SpriteAtlas.Atlas[_superposition.First()];
             SetRoom(_superposition.First() - SpriteAtlas.Atlas.ToList().IndexOf(sp));
             GetComponent<Image>().color = Color.white;
         }
+        else
+        {
+            GetComponent<Image>().sprite = null;
+            GetComponent<Image>().color = Color.Lerp(Color.blue, Color.red, (_superposition.Count - 1f) / (_maxPossibilities - 1));
+        }
     }
-
 
     public void SetRoom(int? room)
     {

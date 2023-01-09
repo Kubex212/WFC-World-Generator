@@ -17,13 +17,13 @@ public class WaveFunctionCollapse
     private List<(int from, int to, int? key)> _edgeInfo = new();
     private HashSet<int>[,] _board;
     private int?[,] _rooms;
-    private Stack<Modification> _history = new Stack<Modification>();
+    private Stack<(Modification modification, List<Vector2Int> collapsedCells)> _history = new();
     private EntropyQueue _queue;
     private Modification _modified;
     [SerializeField] private int _currentRoom = 0;
     
     private System.Random _randomEngine;
-    private AlgorithmState state = AlgorithmState.Running;
+    private AlgorithmState _state = AlgorithmState.Running;
     private Tiles.TileCollection _tileset;
     private Graphs.UndirectedGraph _graph;
     private int _borderWidth = 2;
@@ -349,36 +349,46 @@ public class WaveFunctionCollapse
         //TODO: - customizowac dlugosc granicy
     }
 
-    public Modification Next()
+    public Modification Undo()
     {
-        var cell = Observe();
-
-        if(state!=AlgorithmState.Running)
+        if(_history.Count < 2)
             return null;
 
-        Collapse(cell);
+        var move = _history.Pop();
+
+        foreach(var cell in move.collapsedCells)
+        {
+            _queue.Enqueue(cell);
+        }
+
+        var prevCollapsed = _history.Peek().collapsedCells;
+        _queue.Notify(prevCollapsed[prevCollapsed.Count-1]);
+
+        foreach(var pair in move.modification.Tiles)
+        {
+            var v = pair.Key;
+            var sp = pair.Value;
+            _board[v.x, v.y].UnionWith(sp);
+        }
+
+        _state = AlgorithmState.Running;
+
+        return move.modification;
+    }
+
+    public Modification Next()
+    {
+        var cells = Observe();
+
+        if(_state!=AlgorithmState.Running)
+            return null;
+
+        Collapse(cells[cells.Count-1]);
 
 
         Propagate();
-        _history.Push(_modified);
+        _history.Push((_modified, cells));
 
-        //foreach (var coords in modified.Tiles.Keys.Where(t => !_rooms[t.x, t.y].HasValue && _board[t.x, t.y].All(p => OriginTiles[p].room.HasValue)))
-        //{
-        //    foreach (var n in GetAdjacentCells(coords).Where(v => InBounds(v)))
-        //    {
-        //        if (_rooms[n.x, n.y].HasValue)
-        //        {
-        //            _rooms[coords.x, coords.y] = modified.Rooms[coords] = _rooms[n.x, n.y].Value;
-        //            break;
-        //        }
-        //    }
-        //}
-        //FloodFillRoom(modified);
-        foreach (var sp in _board)
-            if (sp.Count == 0)
-            {
-
-            }
         return _modified;
     }
 
@@ -405,57 +415,29 @@ public class WaveFunctionCollapse
     //    }
     //}
 
-    private Vector2Int Observe()
+    private List<Vector2Int> Observe()
     {
-        Vector2Int cell = new Vector2Int(-1, -1);
+        var cells = new List<Vector2Int>();
         HashSet<int> superposition;
         do
         {
             if (_queue.Count == 0)
             {
-                state = AlgorithmState.Finished;
-                return new Vector2Int(-1, -1);
+                _state = AlgorithmState.Finished;
+                return cells;
             }
 
-            //while (_currentRoom < _graph.Vertices.Count)
-            //{
-            //    cell = _queue.Peek();
-
-            //    var currentRoomNeighbors = GetAdjacentCells(cell)
-            //        .Where(v => InBounds(v) &&
-            //        _board[v.x, v.y].Count == 1 &&
-            //        OriginTiles[_board[v.x, v.y].First()].room == _currentRoom);
-
-            //    if (!currentRoomNeighbors.Any())
-            //    {
-            //        var currentRoomWalkables = OriginTiles.Where(t => t.room == _currentRoom).Select(t => t.index);
-            //        foreach (var sp in _board)
-            //            if (sp.Count > 1)
-            //            {
-            //                _modified.Tiles[cell] = new(currentRoomWalkables.Where(t => sp.Contains(t)));//!!!!!
-            //                sp.ExceptWith(currentRoomWalkables);
-            //            }
-            //        _currentRoom++;
-            //    }
-            //    else
-            //    {
-            //        cell = _queue.Dequeue();
-            //    }
-            //}
-
-            //if(_currentRoom == _graph.Vertices.Count)
-            //    cell = _queue.Dequeue();
-
-            cell = _queue.Dequeue();
+            var cell = _queue.Dequeue();
+            cells.Add(cell);
             superposition = _board[cell.x, cell.y];
         }
         while (superposition.Count == 1);
         if (superposition.Count == 0)
         {
-            state = AlgorithmState.Paradox;
-            return new Vector2Int(-1, -1);
+            _state = AlgorithmState.Paradox;
+            return new();
         }
-        return cell;
+        return cells;
     }
     private List<int> LimitSuperposition(Vector2Int cell, IEnumerable<int> tilesToLeave)
     {
@@ -683,6 +665,11 @@ public class WaveFunctionCollapse
                 _boardModified = false;
             }
             return _list[_list.Count - 1];
+        }
+
+        public void Enqueue(Vector2Int cell)
+        {
+            _list.Add(cell);
         }
 
         public void Notify(Vector2Int lastModified)
