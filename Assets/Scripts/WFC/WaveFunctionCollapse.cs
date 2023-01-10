@@ -11,7 +11,8 @@ using Unity.VisualScripting;
 
 public class WaveFunctionCollapse
 {
-    public List<(int tile, int? room, int index)> OriginTiles { get; private set; } = new(); 
+    public List<(int tile, int? room, int index)> OriginTiles { get; private set; } = new();
+    public AlgorithmState State { get; private set; } = AlgorithmState.Running;
 
     private List<List<(Vector2Int, int)>> _neighborhoods = new List<List<(Vector2Int, int)>>();
     private List<(int from, int to, int? key)> _edgeInfo = new();
@@ -23,7 +24,6 @@ public class WaveFunctionCollapse
     [SerializeField] private int _currentRoom = 0;
     
     private System.Random _randomEngine;
-    private AlgorithmState _state = AlgorithmState.Running;
     private Tiles.TileCollection _tileset;
     private Graphs.UndirectedGraph _graph;
     private int _borderWidth = 2;
@@ -121,6 +121,8 @@ public class WaveFunctionCollapse
         for (int i = _standardTileCount; i < OriginTiles.Count; i++)
         {
             _neighborhoods.Add(new List<(Vector2Int, int)>());
+            var edge = _edgeInfo[OriginTiles[i].room.Value];
+
             for (int dir = 0; dir < 8; dir++)
             {
                 var coord = DirectionEnum((Tiles.Direction)dir);
@@ -132,10 +134,9 @@ public class WaveFunctionCollapse
                         foreach (var originTile in OriginTiles.Take(_standardTileCount).Where(t => t.tile == tile.Index))
                             if (originTile.room.HasValue)
                             {
-                                var edge = _edgeInfo[OriginTiles[i].room.Value];
 
-                                if (graph.CheckEdge(originTile.room.Value, edge.to) ||
-                                    graph.CheckEdge(originTile.room.Value, edge.from))
+                                if (originTile.room.Value == edge.to ||
+                                    originTile.room.Value == edge.from)
                                 {
                                     _neighborhoods[i].Add((coord, originTile.index));
                                     _neighborhoods[originTile.index].Add((coord, i));
@@ -162,9 +163,9 @@ public class WaveFunctionCollapse
     }
     public void CauseParadox()
     {
-        _state = AlgorithmState.Paradox;
+        State = AlgorithmState.Paradox;
     }
-    public Modification EnforceEdgeRules(int edgeTile)
+    public void EnforceEdgeRules(int edgeTile)
     {
         _modified = new Modification();
 
@@ -176,8 +177,6 @@ public class WaveFunctionCollapse
                     .Select(t => t.index)));
         }
         Propagate();
-
-        return _modified;
     }
 
     private class PathingNode
@@ -197,44 +196,70 @@ public class WaveFunctionCollapse
         var unwalkableTiles = OriginTiles.Take(_standardTileCount).Where(t => !t.room.HasValue).Select(t => OriginTiles.IndexOf(t)).ToList();
         var walkableTiles = OriginTiles.Take(_standardTileCount).Where(t => t.room.HasValue).Select(t => OriginTiles.IndexOf(t)).ToList();
 
-        _modified = new Modification();
+        var vertices = graph.Vertices;
+        var ordering = Enumerable.Range(0, vertices.Count)
+            .OrderBy((i) => -graph.Edges[vertices[i]].Count)
+            .ToList();
 
-        for (int i = 0; i<graph.Vertices.Count; i++)
+
+        var grid = new List<(Vector2Int min, Vector2Int max)>();
         {
-            do
-                roomLocations[i] = new Vector2Int(
-                    _randomEngine.Next(_board.GetLength(0) - (_borderWidth + 1) * 2) + _borderWidth + 1,
-                    _randomEngine.Next(_board.GetLength(1) - (_borderWidth + 1) * 2) + _borderWidth + 1);
-            while (map.TryGetValue(roomLocations[i], out _));
+            int gridSize = (int)Math.Ceiling(Math.Sqrt(vertices.Count));
+            for (int x = 0; x < gridSize; x++)
+                for (int y = 0; y < gridSize; y++)
+                {
+                    grid.Add((new(
+                        x * (_board.GetLength(0) - (_borderWidth + 1) * 2) / gridSize + _borderWidth + 1,
+                        y * (_board.GetLength(1) - (_borderWidth + 1) * 2) / gridSize + _borderWidth + 1
+                        ),new(
+                        (x+1) * (_board.GetLength(0) - (_borderWidth + 1) * 2) / gridSize + _borderWidth + 1,
+                        (y+1) * (_board.GetLength(1) - (_borderWidth + 1) * 2) / gridSize + _borderWidth + 1
+                        )));
+                }
+            var center = new Vector2Int(_board.GetLength(0), _board.GetLength(1))/2;
+            grid = grid.OrderBy((v) => ((v.min + v.max) / 2 - center).sqrMagnitude).ToList();
+        }
 
-            map[roomLocations[i]] = new PathingNode()
+        for (int i = 0; i < vertices.Count; i++)
+        {
+
+            var currentRoom = ordering[i];
+            do
+                roomLocations[currentRoom] = new Vector2Int(
+                    _randomEngine.Next(grid[i].min.x, grid[i].max.x),
+                    _randomEngine.Next(grid[i].min.y, grid[i].max.y));
+            while (map.TryGetValue(roomLocations[currentRoom], out _));
+
+            map[roomLocations[currentRoom]] = new PathingNode()
             {
-                room = i,
+                room = currentRoom,
                 length = 0,
                 isPath = true
             };
-            foreach (var n in GetNeighbors(roomLocations[i]))
+            foreach (var n in GetNeighbors(roomLocations[currentRoom]))
             {
                 map[n] = new PathingNode()
                 {
-                    room = i,
+                    room = currentRoom,
                     length = 1,
                     surrounding = true,
-                    parent = map[roomLocations[i]]
+                    parent = map[roomLocations[currentRoom]]
                 };
             }
         }
-        for (int i = 0; i < graph.Vertices.Count; i++)
+        var sumModified = _modified;
+        for (int i = 0; i < vertices.Count; i++)
         {
+            var currentRoom = ordering[i];
             var targets = new HashSet<int>(
-                graph.Edges[graph.Vertices[i]].Keys
-                .Select((v) => graph.Vertices.IndexOf(v))
-                .Where((a) => a > i)
+                graph.Edges[vertices[currentRoom]].Keys
+                .Select((v) => vertices.IndexOf(v))
+                .Where((a) => ordering.IndexOf(a) > i) // a is calculated after currentRoom
             );
-            var surroundings = GetNeighbors(roomLocations[i]);
+            var surroundings = GetNeighbors(roomLocations[currentRoom]);
             var queue = new Queue<Vector2Int>(surroundings);
             var paths = new List<PathingNode>();
-            while (queue.Count > 0)
+            while (queue.Count > 0 && targets.Count > 0)
             {
                 var v = queue.Dequeue();
                 foreach (var neighbor in GetRandomizedNeighbors(v))
@@ -242,15 +267,15 @@ public class WaveFunctionCollapse
                     var visited = map.TryGetValue(neighbor, out var neighborNode);
 
                     // we can enter if
-                    if (_board[neighbor.x, neighbor.y].Any(t => OriginTiles[t].room == i) &&
+                    if (_board[neighbor.x, neighbor.y].Any(t => OriginTiles[t].room == currentRoom) &&
                         (!visited ||
-                        (neighborNode.room != i && !neighborNode.isPath && !neighborNode.surrounding)))
+                        (neighborNode.room != currentRoom && !neighborNode.isPath && !neighborNode.surrounding)))
                     {
                         map[neighbor] = new PathingNode()
                         {
                             parent = map[v],
                             length = map[v].length + 1,
-                            room = i
+                            room = currentRoom
                         };
                         queue.Enqueue(neighbor);
                     }
@@ -271,6 +296,7 @@ public class WaveFunctionCollapse
             if (targets.Count > 0)
             {
                 // could not find all the paths
+                State = AlgorithmState.Paradox;
                 return null;
             }
 
@@ -296,22 +322,20 @@ public class WaveFunctionCollapse
                 }
             }
             
-            var pathCoords = map.Where(p => p.Value.room == i && p.Value.isPath).ToList();
+            var pathCoords = map.Where(p => p.Value.room == currentRoom && p.Value.isPath).ToList();
             // collapse to room i
+            _modified = new Modification();
+
             foreach (var coord in pathCoords.Where(c => c.Value.door == null))
             {
-                if (!_modified.Tiles.ContainsKey(coord.Key))
-                    _modified.Tiles.Add(coord.Key, new());
-                _modified.Tiles[coord.Key].AddRange(LimitSuperposition(coord.Key, walkableTiles.Where(t => OriginTiles[t].room == i)));
+                _modified.Tiles[coord.Key] = new(LimitSuperposition(coord.Key, walkableTiles.Where(t => OriginTiles[t].room == currentRoom)));
             }
             var tilesToRemove = new List<int>();
             foreach (var coord in pathCoords.Where(c => c.Value.door != null))
             {
-                if (!_modified.Tiles.ContainsKey(coord.Key))
-                    _modified.Tiles.Add(coord.Key, new());
                 var doorTiles = OriginTiles.Skip(_standardTileCount).Where(t => t.room == coord.Value.door).Select(t => t.index);
                 tilesToRemove.AddRange(doorTiles);
-                _modified.Tiles[coord.Key].AddRange(LimitSuperposition(coord.Key, doorTiles));
+                _modified.Tiles[coord.Key] = new(LimitSuperposition(coord.Key, doorTiles));
             }
             var tilesToLeave = Enumerable.Range(0, OriginTiles.Count).Except(tilesToRemove);
             for(int x = 0; x < _board.GetLength(0); x++)
@@ -323,21 +347,14 @@ public class WaveFunctionCollapse
                         _modified.Tiles[new (x,y)].AddRange(LimitSuperposition(new(x, y), tilesToLeave));
                     }
         // propagate
-        Propagate();
+            Propagate();
+            sumModified += _modified;
+            if (State == AlgorithmState.Paradox)
+                return null;
         } // end paths
 
-        //var allPathCoords = map.Where(p => p.Value.isPath).Select(p => p.Key).ToList();
 
-
-        //foreach(var coords in allPathCoords)
-        //{
-        //    _board[coords.x, coords.y].SymmetricExceptWith(unwalkableTiles);
-        //    _rooms[coords.x, coords.y] = map[coords].room;
-        //}
-
-        //Propagate(modified);
-
-        return _modified;
+        return _modified = sumModified;
 
         IEnumerable<Vector2Int> GetNeighbors(Vector2Int v)
         {
@@ -362,7 +379,7 @@ public class WaveFunctionCollapse
 
     public Modification Undo()
     {
-        if(_history.Count < 2)
+        if(_history.Count < 1)
             return null;
 
         var move = _history.Pop();
@@ -372,17 +389,17 @@ public class WaveFunctionCollapse
             _queue.Enqueue(cell);
         }
 
-        var prevCollapsed = _history.Peek().collapsedCells;
-        _queue.Notify(prevCollapsed[prevCollapsed.Count-1]);
+        _queue.Notify();
 
-        foreach(var pair in move.modification.Tiles)
+
+        foreach (var pair in move.modification.Tiles)
         {
             var v = pair.Key;
             var sp = pair.Value;
             _board[v.x, v.y].UnionWith(sp);
         }
 
-        _state = AlgorithmState.Running;
+        State = AlgorithmState.Running;
 
         return move.modification;
     }
@@ -391,13 +408,14 @@ public class WaveFunctionCollapse
     {
         var cells = Observe();
 
-        if(_state!=AlgorithmState.Running)
+        if(State!=AlgorithmState.Running)
             return null;
 
         Collapse(cells[cells.Count-1]);
 
 
         Propagate();
+        // TODO: auto undo if paradox
         _history.Push((_modified, cells));
 
         return _modified;
@@ -434,7 +452,7 @@ public class WaveFunctionCollapse
         {
             if (_queue.Count == 0)
             {
-                _state = AlgorithmState.Finished;
+                State = AlgorithmState.Finished;
                 return cells;
             }
 
@@ -445,7 +463,7 @@ public class WaveFunctionCollapse
         while (superposition.Count == 1);
         if (superposition.Count == 0)
         {
-            _state = AlgorithmState.Paradox;
+            State = AlgorithmState.Paradox;
             return new();
         }
         return cells;
@@ -533,6 +551,11 @@ public class WaveFunctionCollapse
                         continue;
 
                     _board[n.cell.x, n.cell.y].Remove(n.tile); // exclude tile if not suported by anything anymore
+                    if (!_board[n.cell.x, n.cell.y].Any())
+                    {
+                        State = AlgorithmState.Paradox;
+                        return;
+                    }
                     if (!_modified.Tiles.ContainsKey(n.cell))
                         _modified.Tiles.Add(n.cell, new());
                     _modified.Tiles[n.cell].Add(n.tile);
@@ -540,7 +563,7 @@ public class WaveFunctionCollapse
                 }
             }
         }
-        _queue.Notify(_modified.Tiles.First().Key);
+        _queue.Notify();
     }
     private bool InBounds(Vector2Int cell)
     {
@@ -609,7 +632,22 @@ public class WaveFunctionCollapse
             Tiles = new();
             //Rooms = new();
         }
-
+        public static Modification operator+(Modification l, Modification r)
+        {
+            var newL = l.Tiles.Select(pair =>
+            {
+                var exists = r.Tiles.TryGetValue(pair.Key, out var tiles);
+                List<int> newList = new(pair.Value);
+                if(exists)
+                    newList.AddRange(tiles);
+                var newPair = new KeyValuePair<Vector2Int, List<int>>(pair.Key, newList);
+                return newPair;
+            });
+            var newR = r.Tiles
+                .Where(pair => !l.Tiles.ContainsKey(pair.Key))
+                .Select(pair => new KeyValuePair<Vector2Int, List<int>>(pair.Key, new(pair.Value)));
+            return new Modification(new(newL.Concat(newR)));
+        }
 
     }
 
@@ -620,7 +658,7 @@ public class WaveFunctionCollapse
         yield return v + new Vector2Int(1, 0);
         yield return v + new Vector2Int(0, -1);
     }
-    private int EntropySort(Vector2Int cell)
+    private double EntropySort(Vector2Int cell)
     {
         var walkableCollapsedNeighbors = GetAdjacentCells(cell)
             .Where(v => InBounds(v) &&
@@ -631,36 +669,25 @@ public class WaveFunctionCollapse
 
         return ((4 - currentRoomNeighbors.Count())
             * 5 + 4 - walkableCollapsedNeighbors.Count())
-            *(OriginTiles.Count+1) + _board[cell.x, cell.y].Count;
+            *(OriginTiles.Count+1) + _board[cell.x, cell.y].Count + 1.0*(cell.y*_board.GetLength(0) + cell.x).GetHashCode()/int.MaxValue;
     }
     private class EntropyQueue
     {
-        private HashSet<int>[,] _board;
-        private bool _boardModified = false;
-        private Vector2Int _lastModified;
+        private bool _boardModified = true;
         private List<Vector2Int> _list = new List<Vector2Int>();
-        private Func<Vector2Int, int> _sortingMethod;
+        private Func<Vector2Int, double> _sortingMethod;
         public int Count { get => _list.Count; }
-        public EntropyQueue(HashSet<int>[,] board, System.Random rng, Func<Vector2Int, int> sortingMethod)
+        public EntropyQueue(HashSet<int>[,] board, System.Random rng, Func<Vector2Int, double> sortingMethod)
         {
-            _board = board;
             for(int x = 0; x<board.GetLength(0); x++)
                 for(int y = 0; y< board.GetLength(1); y++)
                     _list.Add(new Vector2Int(x, y));
-            _list = _list.OrderBy(x => rng.Next()).ToList();
+            _list = _list.ToList();
             _sortingMethod = sortingMethod;
         }
         public Vector2Int Dequeue()
         {
-            if (_boardModified)
-            {
-                _list = _list.OrderBy(v =>
-                    -_sortingMethod(v) * _board.Length -
-                    (v - _lastModified).sqrMagnitude
-                    ).ToList();
-                _boardModified = false;
-            }
-            var v = _list[_list.Count - 1];
+            var v = Peek();
             _list.RemoveAt(_list.Count-1);
             return v;
         }
@@ -670,8 +697,7 @@ public class WaveFunctionCollapse
             if (_boardModified)
             {
                 _list = _list.OrderBy(v =>
-                    -_sortingMethod(v) * _board.Length -
-                    (v - _lastModified).sqrMagnitude
+                    -_sortingMethod(v)
                     ).ToList();
                 _boardModified = false;
             }
@@ -683,10 +709,9 @@ public class WaveFunctionCollapse
             _list.Add(cell);
         }
 
-        public void Notify(Vector2Int lastModified)
+        public void Notify()
         { 
             _boardModified = true;
-            _lastModified = lastModified;
         }
     }
     public enum AlgorithmState

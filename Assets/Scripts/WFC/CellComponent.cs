@@ -12,6 +12,15 @@ public class CellComponent : MonoBehaviour
     private HashSet<int> _superposition = new HashSet<int>();
     private int _maxPossibilities;
     private Func<int, string> _roomNameFunc;
+    public bool Paradox
+    {
+        get => _paradox;
+        set
+        {
+            _paradox = value;
+            SetVisuals();
+        }
+    }
     public void Fill(int tileCount, Func<int, string> roomNameFunc)
     {
         _roomNameFunc = roomNameFunc;
@@ -20,14 +29,7 @@ public class CellComponent : MonoBehaviour
         {
             _superposition.Add(i);
         }
-        GetComponent<Image>().color = Color.red;
-        GetComponent<Image>().sprite = null;
-        GetComponentInChildren<TextMeshProUGUI>().text = "?";
-    }
-    public void Clear()
-    {
-        _superposition.Clear();
-
+        _paradox = false;
         SetVisuals();
     }
     public void Remove(IEnumerable<int> indexes)
@@ -46,7 +48,14 @@ public class CellComponent : MonoBehaviour
 
     private void SetVisuals()
     {
-        if (_superposition.Count == 1)
+        if (_superposition.Count == 0 || _paradox)
+        {
+            _paradox = true;
+            GetComponent<Image>().sprite = null;
+            SetRoom(null);
+            GetComponent<Image>().color = Color.yellow;
+        }
+        else if (_superposition.Count == 1)
         {
             var sp = GetComponent<Image>().sprite = SpriteAtlas.Atlas[_superposition.First()];
             SetRoom(_superposition.First());
@@ -64,5 +73,5 @@ public class CellComponent : MonoBehaviour
     {
         GetComponentInChildren<TextMeshProUGUI>().text = room.HasValue ? _roomNameFunc(room.Value) : "?";
     }
-
+    private bool _paradox = false;
 }

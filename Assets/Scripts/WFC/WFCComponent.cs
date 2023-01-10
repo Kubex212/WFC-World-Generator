@@ -61,9 +61,22 @@ public class WFCComponent : MonoBehaviour
 
         var totalPossibilities = tileCollection.tiles.Count + tileCollection.tiles.Count(t => t.Walkable) * (graph.Vertices.Count + graph.EdgeList.Count - 1);
 
-        _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed, 2);
 
-        Func<int,string> roomNameFunc = _algorithm.RoomNameFunc;
+
+        WaveFunctionCollapse.Modification modified = null;
+
+        for (int i = 0; i < 10; i++)
+        {
+            _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed, 2);
+
+
+            if (tileCollection.edgeTile != null)
+                _algorithm.EnforceEdgeRules(tileCollection.edgeTile.Index);
+            modified = _algorithm.SeedRooms(graph);
+            if (_algorithm.State != WaveFunctionCollapse.AlgorithmState.Paradox)
+                break;
+        }
+        Func<int, string> roomNameFunc = _algorithm.RoomNameFunc;
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
@@ -72,33 +85,17 @@ public class WFCComponent : MonoBehaviour
             }
         }
 
-        WaveFunctionCollapse.Modification modified = null;
-        if (tileCollection.edgeTile != null)
-            modified = _algorithm.EnforceEdgeRules(tileCollection.edgeTile.Index);
         UpdateVisuals(modified);
-
-        modified = null;
-        for (int i = 0; i < 100; i++)
-        {
-            modified = _algorithm.SeedRooms(graph);
-            if (modified != null)
-                break;
-        }
-        if (modified == null)
-        {
-            _algorithm.CauseParadox();
-            ParadoxVisuals();
-        }
-        else
-            UpdateVisuals(modified);
 
         _randomSeed++;
     }
 
     private void Back()
     {
+        var state = _algorithm.State;
         var modified = _algorithm.Undo();
-
+        if (state == WaveFunctionCollapse.AlgorithmState.Paradox)
+            SetParadoxVisuals(false);
         UndoVisuals(modified);
     }
 
@@ -108,15 +105,21 @@ public class WFCComponent : MonoBehaviour
 
         UpdateVisuals(modified);
     }
-    private void ParadoxVisuals()
+    private void SetParadoxVisuals(bool value)
     {
         foreach (var cell in _board)
         {
-            cell.Clear();
+            cell.Paradox = value;
         }
     }
+
     private void UpdateVisuals(WaveFunctionCollapse.Modification modified)
     {
+        if(_algorithm.State == WaveFunctionCollapse.AlgorithmState.Paradox)
+        {
+            SetParadoxVisuals(true);
+            return;
+        }
         if (modified != null)
         {
             foreach (var key in modified.Tiles.Keys)
