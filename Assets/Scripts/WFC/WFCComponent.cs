@@ -84,10 +84,13 @@ public class WFCComponent : MonoBehaviour
             if (modified != null)
                 break;
         }
-
         if (modified == null)
-            throw new ArgumentException("Could not seed map with specified input graph");
-        UpdateVisuals(modified);
+        {
+            _algorithm.CauseParadox();
+            ParadoxVisuals();
+        }
+        else
+            UpdateVisuals(modified);
 
         _randomSeed++;
     }
@@ -105,7 +108,13 @@ public class WFCComponent : MonoBehaviour
 
         UpdateVisuals(modified);
     }
-
+    private void ParadoxVisuals()
+    {
+        foreach (var cell in _board)
+        {
+            cell.Clear();
+        }
+    }
     private void UpdateVisuals(WaveFunctionCollapse.Modification modified)
     {
         if (modified != null)

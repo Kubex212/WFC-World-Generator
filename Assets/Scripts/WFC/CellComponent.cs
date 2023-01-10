@@ -24,6 +24,12 @@ public class CellComponent : MonoBehaviour
         GetComponent<Image>().sprite = null;
         GetComponentInChildren<TextMeshProUGUI>().text = "?";
     }
+    public void Clear()
+    {
+        _superposition.Clear();
+
+        SetVisuals();
+    }
     public void Remove(IEnumerable<int> indexes)
     {
         _superposition.ExceptWith(indexes);

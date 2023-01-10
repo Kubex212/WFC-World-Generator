@@ -29,13 +29,6 @@ public class WaveFunctionCollapse
     private int _borderWidth = 2;
     private int _standardTileCount;
 
-    public string RoomNameFunc(int tile)
-    {
-        var ind = OriginTiles[tile].room;
-        return tile < _standardTileCount ?
-            ind?.ToString() ?? "?" :
-            $"{_edgeInfo[ind.Value].from}:{_edgeInfo[ind.Value].to}";
-    }
     public WaveFunctionCollapse(int width, int height, Tiles.TileCollection tileset, Graphs.UndirectedGraph graph, int randomSeed, int borderWidth)
     {
         _board = new HashSet<int>[width, height];
@@ -159,6 +152,17 @@ public class WaveFunctionCollapse
                             }
             }
         }
+    }
+    public string RoomNameFunc(int tile)
+    {
+        var ind = OriginTiles[tile].room;
+        return tile < _standardTileCount ?
+            ind?.ToString() ?? "?" :
+            $"{_edgeInfo[ind.Value].from}:{_edgeInfo[ind.Value].to}";
+    }
+    public void CauseParadox()
+    {
+        _state = AlgorithmState.Paradox;
     }
     public Modification EnforceEdgeRules(int edgeTile)
     {
