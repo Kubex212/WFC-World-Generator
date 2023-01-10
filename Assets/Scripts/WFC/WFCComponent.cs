@@ -61,14 +61,16 @@ public class WFCComponent : MonoBehaviour
 
         var totalPossibilities = tileCollection.tiles.Count + tileCollection.tiles.Count(t => t.Walkable) * (graph.Vertices.Count + graph.EdgeList.Count - 1);
 
+        _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed, 2);
+
+        Func<int,string> roomNameFunc = _algorithm.RoomNameFunc;
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
-                _board[x, y].Fill(totalPossibilities);
+                _board[x, y].Fill(totalPossibilities, roomNameFunc);
             }
         }
-        _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed, 2);
 
         WaveFunctionCollapse.Modification modified = null;
         if (tileCollection.edgeTile != null)

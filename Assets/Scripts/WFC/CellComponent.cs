@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,10 @@ public class CellComponent : MonoBehaviour
 {
     private HashSet<int> _superposition = new HashSet<int>();
     private int _maxPossibilities;
-    public void Fill(int tileCount)
+    private Func<int, string> _roomNameFunc;
+    public void Fill(int tileCount, Func<int, string> roomNameFunc)
     {
+        _roomNameFunc = roomNameFunc;
         _maxPossibilities = tileCount;
         for (int i = 0; i < tileCount; i++)
         {
@@ -40,19 +43,20 @@ public class CellComponent : MonoBehaviour
         if (_superposition.Count == 1)
         {
             var sp = GetComponent<Image>().sprite = SpriteAtlas.Atlas[_superposition.First()];
-            SetRoom(_superposition.First() - SpriteAtlas.Atlas.ToList().IndexOf(sp));
+            SetRoom(_superposition.First());
             GetComponent<Image>().color = Color.white;
         }
         else
         {
             GetComponent<Image>().sprite = null;
+            SetRoom(null);
             GetComponent<Image>().color = Color.Lerp(Color.blue, Color.red, (_superposition.Count - 1f) / (_maxPossibilities - 1));
         }
     }
 
     public void SetRoom(int? room)
     {
-        GetComponentInChildren<TextMeshProUGUI>().text = room?.ToString(/* ?? */) ?? "?"; // ??
+        GetComponentInChildren<TextMeshProUGUI>().text = room.HasValue ? _roomNameFunc(room.Value) : "?";
     }
 
 }
