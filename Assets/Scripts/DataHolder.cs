@@ -10,6 +10,8 @@ public class DataHolder : MonoBehaviour
     public TileCollection Tiles { get; set; } = null;
     public UndirectedGraph Graph { get; set; } = null;
 
+    public Dictionary<string, (float X, float Y)> VertexPositions { get; set; } = null;
+
     public static DataHolder Instance { get; private set; } = null;
     void Awake()
     {

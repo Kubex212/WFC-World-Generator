@@ -37,15 +37,36 @@ public class GraphRenderer : MonoBehaviour
         _loadButton.onClick.AddListener(Load);
         _backButton.onClick.AddListener(Back);
 
-        Graph = new UndirectedGraph();
-        var v0 = Graph.AddVertex("v0");
-        var v1 = Graph.AddVertex("v1");
-        Graph.AddEdge(v0, v1);
+        var dataHolder = FindObjectOfType<DataHolder>();
 
-        SpawnVertices();
+        if (dataHolder.Graph == null)
+        {
+            Graph = new UndirectedGraph();
+            var v0 = Graph.AddVertex("v0");
+            var v1 = Graph.AddVertex("v1");
+            var v2 = Graph.AddVertex("v2");
+            var v3 = Graph.AddVertex("v3");
+            Graph.AddEdge(v1, v0);
+            Graph.AddEdge(v1, v2);
+            Graph.AddEdge(v1, v3);
+
+            var positions = new Dictionary<string, (float X, float Y)>()
+            {
+                [v0.ToString()] = (-3f, -0.5f),
+                [v1.ToString()] = (-0.5f, -0.5f),
+                [v2.ToString()] = (2f, -0.5f),
+                [v3.ToString()] = (-0.5f, -3f)
+            };
+            dataHolder.Graph = Graph;
+            SpawnVertices(positions);
+        }
+        else
+        {
+            Graph = dataHolder.Graph;
+            SpawnVertices(FindObjectOfType<DataHolder>().VertexPositions);
+        }
+
         SpawnEdges();
-
-        FindObjectOfType<DataHolder>().Graph = Graph;
     }
 
     // Update is called once per frame
@@ -306,6 +327,8 @@ public class GraphRenderer : MonoBehaviour
 
     private void Back()
     {
+        FindObjectOfType<DataHolder>().VertexPositions = _vertices.ToDictionary(v => v.vertex.ToString(), v => (v.transform.position.x, v.transform.position.y));
+
         SceneManager.LoadScene("MainMenu");
     }
 }

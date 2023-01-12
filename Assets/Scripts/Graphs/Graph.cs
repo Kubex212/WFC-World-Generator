@@ -23,6 +23,11 @@ namespace Graphs
                 return result.Distinct().ToList();
             }
         }
+
+        public bool IsConnected
+        {
+            get => !Edges.Any(kvp => !kvp.Value.Any());
+        }
         public bool CheckEdge(int a, int b)
         {
             return Edges[Vertices[a]].ContainsKey(Vertices[b]);
