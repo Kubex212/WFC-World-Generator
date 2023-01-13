@@ -205,6 +205,7 @@ public class WaveFunctionCollapse
         var grid = new List<(Vector2Int min, Vector2Int max)>();
         {
             int gridSize = (int)Math.Ceiling(Math.Sqrt(vertices.Count));
+            gridSize = gridSize % 2 == 0 ? gridSize + 1 : gridSize;
             for (int x = 0; x < gridSize; x++)
                 for (int y = 0; y < gridSize; y++)
                 {

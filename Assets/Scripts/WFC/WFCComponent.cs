@@ -6,12 +6,16 @@ using System.Drawing;
 using Tiles;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Text;
+using System.IO;
+using UnityEditor;
 
 public class WFCComponent : MonoBehaviour
 {
     [SerializeField] private Button _goBackButton;
     [SerializeField] private Button _goForwardButton;
     [SerializeField] private Button _retryButton;
+    [SerializeField] private Button _exportButton;
 
     [SerializeField] private GameObject _cellPrefab;
 
@@ -28,6 +32,7 @@ public class WFCComponent : MonoBehaviour
         _goBackButton.onClick.AddListener(Back);
         _goForwardButton.onClick.AddListener(Next);
         _retryButton.onClick.AddListener(Init);
+        _exportButton.onClick.AddListener(Export);
         _board = new CellComponent[_width, _height];
         var tileCollection = FindObjectOfType<DataHolder>().Tiles;
         int size = Math.Max(_width, _height);
@@ -49,8 +54,15 @@ public class WFCComponent : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.Return))
+        if (Input.GetKey(KeyCode.Return) || Input.GetKey(KeyCode.RightArrow))
             Next();
+        else if (Input.GetKey(KeyCode.LeftArrow))
+            Back();
+
+        if (_algorithm.State == WaveFunctionCollapse.AlgorithmState.Finished)
+            _exportButton.interactable = true;
+        else
+            _exportButton.interactable = false;
     }
 
     private void Init()
@@ -67,7 +79,7 @@ public class WFCComponent : MonoBehaviour
 
         for (int i = 0; i < 10; i++)
         {
-            _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed, 2);
+            _algorithm = new WaveFunctionCollapse(_width, _height, tileCollection, graph, _randomSeed++, 2);
 
 
             if (tileCollection.edgeTile != null)
@@ -146,5 +158,49 @@ public class WFCComponent : MonoBehaviour
         var rect = GetComponent<RectTransform>().rect;
         return new Vector3(x * pixSize, -(y * pixSize), 0)/size
             + new Vector3(rect.center.x-pixSize/2, rect.center.y+pixSize/2);
+    }
+
+    private void Export()
+    {
+        var path = EditorUtility.SaveFilePanel(
+          "Save the result board.",
+          "",
+          "board" + ".csv",
+          "csv");
+
+        if (path.Length == 0)
+        {
+            return;
+        }
+
+        var csv = ToCsv();
+        File.WriteAllText(path, csv);
+    }
+
+    private string ToCsv()
+    {
+        var sb = new StringBuilder();
+
+        if (_board.GetLength(0) == 0 || _board.GetLength(1) == 0)
+            return null;
+
+        for(int row = 0; row < _board.GetLength(0); row++)
+        {
+            for(int col = 0; col < _board.GetLength(1) - 1; col++)
+            {
+                sb.Append($"{_board[row,col]._superposition.Single()} ");
+            }
+            sb.Append($"{_board[row, _board.GetLength(1)-1]._superposition.Single()} ");
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
+    }
+
+    public class ExportObject
+    {
+        public List<Tile> Tiles { get; set; }
+        public Tile EdgeTile { get; set; }
+        public bool Diagonal { get; set; }
     }
 }

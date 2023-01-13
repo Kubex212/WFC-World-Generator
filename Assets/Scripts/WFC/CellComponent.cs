@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 public class CellComponent : MonoBehaviour
 {
-    private HashSet<int> _superposition = new HashSet<int>();
+    public HashSet<int> _superposition = new HashSet<int>();
     private int _maxPossibilities;
     private Func<int, string> _roomNameFunc;
     public bool Paradox
