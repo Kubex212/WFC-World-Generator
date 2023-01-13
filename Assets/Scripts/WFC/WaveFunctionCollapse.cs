@@ -407,10 +407,18 @@ public class WaveFunctionCollapse
 
     public Modification Next()
     {
+        if (State != AlgorithmState.Running)
+            return null;
+
+        _modified = new Modification();
         var cells = Observe();
 
-        if(State!=AlgorithmState.Running)
+        if (State != AlgorithmState.Running)
+        {
+            if(cells.Count>0)
+                _history.Push((_modified, cells));
             return null;
+        }
 
         Collapse(cells[cells.Count-1]);
 
@@ -465,7 +473,7 @@ public class WaveFunctionCollapse
         if (superposition.Count == 0)
         {
             State = AlgorithmState.Paradox;
-            return new();
+            return cells;
         }
         return cells;
     }
@@ -481,7 +489,6 @@ public class WaveFunctionCollapse
     }
     private void Collapse(Vector2Int cell)
     {
-        _modified = new Modification();
         var superposition = _board[cell.x, cell.y];
 
         var statesToDelete = superposition.ToList();
@@ -552,14 +559,14 @@ public class WaveFunctionCollapse
                         continue;
 
                     _board[n.cell.x, n.cell.y].Remove(n.tile); // exclude tile if not suported by anything anymore
+                    if (!_modified.Tiles.ContainsKey(n.cell))
+                        _modified.Tiles.Add(n.cell, new());
+                    _modified.Tiles[n.cell].Add(n.tile);
                     if (!_board[n.cell.x, n.cell.y].Any())
                     {
                         State = AlgorithmState.Paradox;
                         return;
                     }
-                    if (!_modified.Tiles.ContainsKey(n.cell))
-                        _modified.Tiles.Add(n.cell, new());
-                    _modified.Tiles[n.cell].Add(n.tile);
                     s.Push(n);
                 }
             }
