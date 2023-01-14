@@ -8,6 +8,7 @@ public class SelectedSlotComponent : TileSlot
 {
     [SerializeField] private Toggle _walkableToggle;
     [SerializeField] private Toggle _edgeTileToggle;
+    [SerializeField] private Toggle _doorTileToggle;
     private Color _defaultColor;
     public Tile Selected
     {
