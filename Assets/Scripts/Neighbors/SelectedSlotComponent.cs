@@ -26,6 +26,8 @@ public class SelectedSlotComponent : TileSlot
             _walkableToggle.interactable = value != null;
             _edgeTileToggle.isOn = value != null ? tcr.EdgeTile==value : false;
             _edgeTileToggle.interactable = value != null && !value.Walkable;
+            _doorTileToggle.isOn = value != null ? value.IsDoor : false;
+            _doorTileToggle.interactable = value != null;
             _selected = value;
         }
     }

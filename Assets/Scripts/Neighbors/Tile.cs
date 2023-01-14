@@ -10,6 +10,7 @@ namespace Tiles
         public int Index = _nextIndex++;
         public List<List<Tile>> Neighbors { get; private set; } = new List<List<Tile>>();
         public bool Walkable;
+        public bool IsDoor;
         public int Lock, Key;
         public override string ToString()
         {
