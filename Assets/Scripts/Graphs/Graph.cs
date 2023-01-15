@@ -24,6 +24,14 @@ namespace Graphs
             }
         }
 
+        public bool IsValid
+        {
+            get
+            {
+                return IsConnected;
+            }
+        }
+
         public bool IsConnected
         {
             get => !Edges.Any(kvp => !kvp.Value.Any());

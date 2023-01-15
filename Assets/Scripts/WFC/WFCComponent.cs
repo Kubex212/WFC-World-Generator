@@ -9,6 +9,7 @@ using UnityEngine.UI;
 using System.Text;
 using System.IO;
 using UnityEditor;
+using UnityEngine.SceneManagement;
 
 public class WFCComponent : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class WFCComponent : MonoBehaviour
     [SerializeField] private Button _goForwardButton;
     [SerializeField] private Button _retryButton;
     [SerializeField] private Button _exportButton;
+    [SerializeField] private Button _returnToMainMenuButton;
 
     [SerializeField] private GameObject _cellPrefab;
 
@@ -33,6 +35,7 @@ public class WFCComponent : MonoBehaviour
         _goForwardButton.onClick.AddListener(Next);
         _retryButton.onClick.AddListener(Init);
         _exportButton.onClick.AddListener(Export);
+        _returnToMainMenuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
         _board = new CellComponent[_width, _height];
         var tileCollection = FindObjectOfType<DataHolder>().Tiles;
         int size = Math.Max(_width, _height);
@@ -181,16 +184,20 @@ public class WFCComponent : MonoBehaviour
     {
         var sb = new StringBuilder();
 
+        var tiles = FindObjectOfType<DataHolder>().Tiles.tiles;
+
         if (_board.GetLength(0) == 0 || _board.GetLength(1) == 0)
             return null;
 
-        for(int row = 0; row < _board.GetLength(0); row++)
+        for(int row = 0; row < _width; row++)
         {
-            for(int col = 0; col < _board.GetLength(1) - 1; col++)
+            for(int col = 0; col < _height - 1; col++)
             {
-                sb.Append($"{_board[row,col]._superposition.Single()} ");
+                var t = _board[row, col]._superposition.Single();
+                sb.Append($"{t},{tiles[t].Walkable} ");
             }
-            sb.Append($"{_board[row, _board.GetLength(1)-1]._superposition.Single()} ");
+            var tt = _board[row, _height-1]._superposition.Single();
+            sb.Append($"{tt},{tiles[tt].Walkable}");
             sb.AppendLine();
         }
 

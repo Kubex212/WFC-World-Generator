@@ -1391,6 +1391,7 @@ MonoBehaviour:
   _goForwardButton: {fileID: 503441412}
   _retryButton: {fileID: 1650141682}
   _exportButton: {fileID: 1711810975}
+  _returnToMainMenuButton: {fileID: 2020813464}
   _cellPrefab: {fileID: 7793470505397479047, guid: db00b28dc6cd72545854c6b2c4f1420a, type: 3}
   _randomSeed: 2145
   _width: 30

@@ -2593,6 +2593,7 @@ MonoBehaviour:
   _saveButton: {fileID: 195447004}
   _loadButton: {fileID: 1986595003}
   _backButton: {fileID: 175820036}
+  _doorTileToggle: {fileID: 745646783}
   _edgeTileToggle: {fileID: 1831989528}
   _diagonalityToggle: {fileID: 1317617933}
 --- !u!1 &1044862550

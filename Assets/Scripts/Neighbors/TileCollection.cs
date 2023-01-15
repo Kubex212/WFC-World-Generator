@@ -34,6 +34,7 @@ namespace Tiles
             edgeTile = importedObject.EdgeTile;
             diagonal = importedObject.Diagonal;
         }
+
         public class ExportObject
         {
             public List<Tile> Tiles { get; set; }

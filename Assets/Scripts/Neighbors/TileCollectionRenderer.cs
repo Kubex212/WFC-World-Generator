@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using System.IO.Compression;
 using System;
 using UnityEngine.SceneManagement;
+using System.Reflection;
 
 public class TileCollectionRenderer : MonoBehaviour
 {
@@ -30,6 +31,7 @@ public class TileCollectionRenderer : MonoBehaviour
     [SerializeField] private Button _loadButton;
     [SerializeField] private Button _backButton;
 
+    [SerializeField] private Toggle _doorTileToggle;
     [SerializeField] private Toggle _edgeTileToggle;
     [SerializeField] private Toggle _diagonalityToggle;
 
@@ -56,7 +58,19 @@ public class TileCollectionRenderer : MonoBehaviour
                 if((int)slot.direction%2==1)
                     slot.gameObject.SetActive(v);
         });
-        FindObjectOfType<DataHolder>().Tiles = _tileCollection;
+
+        var dhTiles = FindObjectOfType<DataHolder>().Tiles;
+
+        if(dhTiles != null)
+        {
+            _tileCollection = dhTiles;
+        }
+        else
+        {
+            var path = Path.Combine(Application.dataPath, "Scripts", "Neighbors", "tileset2.tset");
+            Load(path);
+            dhTiles = _tileCollection;
+        }
     }
     private void OnRectTransformDimensionsChange()
     {
@@ -94,8 +108,8 @@ public class TileCollectionRenderer : MonoBehaviour
         var zipPath = EditorUtility.SaveFilePanel(
           "Save tileset",
           "",
-          "tileset" + ".tset",
-          "tset");
+          "tileset" + ".zip",
+          "zip");
         if (zipPath.Length == 0)
         {
             Debug.LogError("failed to choose info path");
@@ -125,10 +139,18 @@ public class TileCollectionRenderer : MonoBehaviour
 
     private void Load()
     {
+        Load(null);
+    }
+
+    private void Load(string zipPath)
+    {
         Clear();
         TempCleanup();
 
-        string zipPath = EditorUtility.OpenFilePanel("Load tileset", "", "tset");
+        if(zipPath == null)
+        {
+            zipPath = EditorUtility.OpenFilePanel("Load tileset", "", "tset");
+        }
         if (zipPath.Length == 0)
         {
             Debug.LogError("Could not open tileset");
