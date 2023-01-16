@@ -114,17 +114,24 @@ public class WFCComponent : MonoBehaviour
     private void Back()
     {
         var state = _algorithm.State;
-        var modified = _algorithm.Undo();
+        var (undone,done) = _algorithm.Undo();
         if (state == WaveFunctionCollapse.AlgorithmState.Paradox)
             SetParadoxVisuals(false);
-        UndoVisuals(modified);
+        UndoVisuals(undone);
+        UpdateVisuals(done);
     }
 
     private void Next()
     {
         var modified = _algorithm.Next();
-
         UpdateVisuals(modified);
+        while (_algorithm.State == WaveFunctionCollapse.AlgorithmState.Paradox)
+        {
+            var (undone, done) = _algorithm.Undo();
+            SetParadoxVisuals(false);
+            UndoVisuals(undone);
+            UpdateVisuals(done);
+        }
     }
     private void SetParadoxVisuals(bool value)
     {
