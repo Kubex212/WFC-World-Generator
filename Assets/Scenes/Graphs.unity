@@ -1360,7 +1360,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_AnchorMax.y
@@ -1368,7 +1368,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_AnchorMin.y
@@ -1412,11 +1412,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -383
+      value: -253
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 356
+      value: -347
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -4038,7 +4038,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2141077170
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4054,11 +4054,11 @@ RectTransform:
   m_Father: {fileID: 206134112}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 90, y: -90.29999}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -75, y: 53}
   m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 1, y: 0}
 --- !u!114 &2141077171
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -46,7 +46,6 @@ public class VertexGameObject : MonoBehaviour
         var allHits = Physics2D.RaycastAll(MousePos, Vector2.zero);
         foreach (var hit in allHits)
         {
-            Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject == this.gameObject)
             {
                 isSelected = true;
