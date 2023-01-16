@@ -14,6 +14,9 @@ public class WaveFunctionCollapse
     public List<(int tile, int? room, int index)> OriginTiles { get; private set; } = new();
     public AlgorithmState State { get; private set; } = AlgorithmState.Running;
 
+    public Vector2Int? startRoomLocation = null;
+    public Vector2Int? endRoomLocation = null;
+
     private List<List<(Vector2Int, int)>> _neighborhoods = new List<List<(Vector2Int, int)>>();
     private List<(int from, int to, int? key)> _edgeInfo = new();
     private HashSet<int>[,] _board;
@@ -230,6 +233,15 @@ public class WaveFunctionCollapse
                     _randomEngine.Next(grid[i].min.x, grid[i].max.x),
                     _randomEngine.Next(grid[i].min.y, grid[i].max.y));
             while (map.TryGetValue(roomLocations[currentRoom], out _));
+
+            if (graph.Vertices[currentRoom].IsStart)
+            {
+                startRoomLocation = roomLocations[currentRoom];
+            }
+            else if(graph.Vertices[currentRoom].IsExit)
+            {
+                endRoomLocation = roomLocations[currentRoom];
+            }
 
             map[roomLocations[currentRoom]] = new PathingNode()
             {

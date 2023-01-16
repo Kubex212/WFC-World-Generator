@@ -10,6 +10,9 @@ using System.Text;
 using System.IO;
 using UnityEditor;
 using UnityEngine.SceneManagement;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 public class WFCComponent : MonoBehaviour
 {
@@ -66,6 +69,9 @@ public class WFCComponent : MonoBehaviour
             _exportButton.interactable = true;
         else
             _exportButton.interactable = false;
+
+        if (Input.GetKeyDown(KeyCode.G))
+            Serialize();
     }
 
     private void Init()
@@ -204,10 +210,95 @@ public class WFCComponent : MonoBehaviour
         return sb.ToString();
     }
 
+    private void Serialize()
+    {
+        var path = EditorUtility.SaveFilePanel(
+          "Save the result board.",
+          "",
+          "board" + ".json",
+          "json");
+
+        if (path.Length == 0)
+        {
+            return;
+        }
+
+        var tiles = FindObjectOfType<DataHolder>().Tiles.tiles;
+
+        var eo = new ExportObject2()
+        {
+            Width = _width,
+            Height = _height,
+            StartX = _algorithm.startRoomLocation.HasValue ? _algorithm.startRoomLocation.Value.x : -1,
+            StartY = _algorithm.startRoomLocation.HasValue ? _algorithm.startRoomLocation.Value.y : -1,
+            EndX = _algorithm.startRoomLocation.HasValue ? _algorithm.endRoomLocation.Value.x : -1,
+            EndY = _algorithm.startRoomLocation.HasValue ? _algorithm.endRoomLocation.Value.y : -1,
+            TileInfo = new TileInfo[_width, _height]
+        };
+
+        if (_board.GetLength(0) == 0 || _board.GetLength(1) == 0)
+            return;
+
+        for (int row = 0; row < _width; row++)
+        {
+            for (int col = 0; col < _height - 1; col++)
+            {
+                Debug.Log($"{row}, {col}");
+                var t = _board[row, col]._superposition.Single();
+                var texx = _board[row, col].GetComponent<Image>().sprite.texture;
+                eo.TileInfo[row, col] = new TileInfo()
+                {
+                    x = texx.width,
+                    y = texx.height,
+                    bytes = ImageConversion.EncodeToPNG(texx),
+                    Walkable = tiles[t >= tiles.Count ? tiles.Count - 1 : t].Walkable
+                };
+            }
+            var tt = _board[row, _height - 1]._superposition.Single();
+            var tex = _board[row, _height - 1].GetComponent<Image>().sprite.texture;
+            eo.TileInfo[row, _height - 1] = new TileInfo()
+            {
+                x = tex.width,
+                y = tex.height,
+                bytes = ImageConversion.EncodeToPNG(tex),
+                Walkable = tiles[tt].Walkable
+            };
+        }
+
+        string text = JsonConvert.SerializeObject(eo);
+        File.WriteAllText(path, text);
+    }
+
     public class ExportObject
     {
         public List<Tile> Tiles { get; set; }
         public Tile EdgeTile { get; set; }
         public bool Diagonal { get; set; }
+    }
+
+    [Serializable]
+    public class ExportObject2
+    {
+        public int Width { get; set; }
+        public int Height {get; set; }
+        public int StartX { get; set; }
+        public int StartY { get; set; }
+        public int EndX { get; set; }
+        public int EndY { get; set; }
+        public TileInfo[,] TileInfo { get; set; }
+    }
+
+    [Serializable]
+    public class TileInfo
+    {
+        [SerializeField]
+        public int x;
+        [SerializeField]
+        public int y;
+        [SerializeField]
+        public byte[] bytes;
+
+        public int? Key;
+        public bool Walkable { get; set; }
     }
 }
