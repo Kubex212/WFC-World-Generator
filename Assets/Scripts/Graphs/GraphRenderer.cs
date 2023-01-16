@@ -60,6 +60,9 @@ public class GraphRenderer : MonoBehaviour
             };
             dataHolder.Graph = Graph;
             SpawnVertices(positions);
+
+            SetVertexRestriction(_vertices.Single(v => v.vertex.Name == "v0"), RestrictionType.Start);
+            SetVertexRestriction(_vertices.Single(v => v.vertex.Name == "v2"), RestrictionType.End);
         }
         else
         {
@@ -67,8 +70,6 @@ public class GraphRenderer : MonoBehaviour
             SpawnVertices(FindObjectOfType<DataHolder>().VertexPositions);
         }
 
-        SetVertexRestriction(_vertices.Single(v => v.vertex.Name == "v0"), RestrictionType.Start);
-        SetVertexRestriction(_vertices.Single(v => v.vertex.Name == "v2"), RestrictionType.End);
 
         SpawnEdges();
     }
@@ -107,8 +108,8 @@ public class GraphRenderer : MonoBehaviour
             SpawnEdges();
         }
 
-        var hoveredVertex = _vertices.Where(v => v.isSelected).FirstOrDefault();
-        var hoveredEdge = _edges.Where(e => e.isSelected).FirstOrDefault();
+        var hoveredVertex = _vertices.Where(v => v != null && v.isSelected).FirstOrDefault();
+        var hoveredEdge = _edges.Where(e => e != null && e.isSelected).FirstOrDefault();
         if (Input.GetKeyDown(KeyCode.Delete) && hoveredVertex != null)
         {
             DestroyVertex(hoveredVertex);
@@ -330,6 +331,8 @@ public class GraphRenderer : MonoBehaviour
 
         // delete the vertex game object
         Destroy(vertexToDestroy.gameObject);
+
+        _vertices = new List<VertexGameObject>(FindObjectsOfType<VertexGameObject>());
     }
 
     private void DestroyEdge(EdgeGameObject edgeToDestroy)
@@ -341,7 +344,7 @@ public class GraphRenderer : MonoBehaviour
 
     private void Back()
     {
-        FindObjectOfType<DataHolder>().VertexPositions = _vertices.ToDictionary(v => v.vertex.ToString(), v => (v.transform.position.x, v.transform.position.y));
+        FindObjectOfType<DataHolder>().VertexPositions = _vertices.Where(v => v != null).ToDictionary(v => v.vertex.ToString(), v => (v.transform.position.x, v.transform.position.y));
 
         SceneManager.LoadScene("MainMenu");
     }
