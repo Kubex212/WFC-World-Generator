@@ -1729,7 +1729,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 95}
-  m_SizeDelta: {x: 150, y: 40}
+  m_SizeDelta: {x: 185, y: 40}
   m_Pivot: {x: 1, y: 0}
 --- !u!114 &745646783
 MonoBehaviour:
@@ -2594,7 +2594,6 @@ MonoBehaviour:
   _loadButton: {fileID: 1986595003}
   _backButton: {fileID: 175820036}
   _doorTileToggle: {fileID: 745646783}
-  _edgeTileToggle: {fileID: 1831989528}
   _diagonalityToggle: {fileID: 1317617933}
 --- !u!1 &1044862550
 GameObject:

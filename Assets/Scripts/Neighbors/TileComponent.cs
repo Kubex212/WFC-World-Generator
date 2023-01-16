@@ -55,9 +55,9 @@ public class TileComponent : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     }
     public void OnPointerUp(PointerEventData _)
     {
-        var allSlots = FindObjectsOfType<TileSlot>();
-        var neighborSlots = FindObjectsOfType<NeighborSlotComponent>();
-        var selectedSlot = FindObjectOfType<SelectedSlotComponent>();
+        var allSlots = FindObjectsOfType<TileSlot>(true);
+        var neighborSlots = FindObjectsOfType<NeighborSlotComponent>(true);
+        var selectedSlot = FindObjectOfType<SelectedSlotComponent>(true);
         var slot = allSlots.Where(v => v.IsHovered).FirstOrDefault();
 
         var neighborSlot = slot as NeighborSlotComponent;

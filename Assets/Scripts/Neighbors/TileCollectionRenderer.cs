@@ -20,7 +20,8 @@ public class TileCollectionRenderer : MonoBehaviour
     public GameObject tilesPanel;
 
     private TileCollection _tileCollection = new TileCollection();
-    public Tile EdgeTile { get => _tileCollection.edgeTile; }
+    public Tile EdgeTile { get => _tileCollection.edgeTile; set => _tileCollection.edgeTile = value; }
+    public bool Diagonal { get => _tileCollection.diagonal; set => _tileCollection.diagonal = value; }
     public Dictionary<Tile, TileComponent> tileObjects = new Dictionary<Tile, TileComponent>();
 
     private List<NeighborSlotComponent> _neighborSlots;
@@ -31,9 +32,6 @@ public class TileCollectionRenderer : MonoBehaviour
     [SerializeField] private Button _loadButton;
     [SerializeField] private Button _backButton;
 
-    [SerializeField] private Toggle _doorTileToggle;
-    [SerializeField] private Toggle _edgeTileToggle;
-    [SerializeField] private Toggle _diagonalityToggle;
 
     void OnEnable()
     {
@@ -47,17 +45,6 @@ public class TileCollectionRenderer : MonoBehaviour
         _loadButton.onClick.AddListener(Load);
         _backButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
 
-        _edgeTileToggle.onValueChanged.AddListener((v) =>
-        {
-            if (_selectionSlot.Selected != null) _tileCollection.edgeTile = v ? _selectionSlot.Selected : null;
-        });
-        _diagonalityToggle.onValueChanged.AddListener((v) =>
-        {
-            _tileCollection.diagonal = v;
-            foreach(var slot in _neighborSlots)
-                if((int)slot.direction%2==1)
-                    slot.gameObject.SetActive(v);
-        });
 
         var dhTiles = FindObjectOfType<DataHolder>().Tiles;
 
@@ -169,7 +156,7 @@ public class TileCollectionRenderer : MonoBehaviour
         Tile.Load(_tileCollection.tiles.Count);
         SpawnTiles(imgPath);
 
-        _diagonalityToggle.isOn = _tileCollection.diagonal;
+        _selectionSlot.Selected = null;
     }
 
     private void SpawnTiles(string pictures)
