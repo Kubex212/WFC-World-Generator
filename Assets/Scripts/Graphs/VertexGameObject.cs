@@ -12,6 +12,9 @@ public class VertexGameObject : MonoBehaviour
     [SerializeField] private Color _baseColor;
     [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private TextMeshPro _keyText;
+    [SerializeField] private GameObject _keyPanel;
+    [SerializeField] private SpriteRenderer _borderRenderer;
+    [SerializeField] private GraphRenderer _graphRenderer;
 
     public bool isSelected = false;
     public Vertex vertex;
@@ -28,6 +31,17 @@ public class VertexGameObject : MonoBehaviour
 
     void Update()
     {
+        if (vertex.Key != null && !_keyPanel.activeInHierarchy)
+        {
+            _keyPanel.SetActive(true);
+        }
+        else if (vertex.Key == null && _keyPanel.activeInHierarchy)
+        {
+            _keyPanel.SetActive(false);
+        }
+
+        _keyText.text = vertex.Key.ToString();
+
         var MousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         var allHits = Physics2D.RaycastAll(MousePos, Vector2.zero);
         foreach (var hit in allHits)
@@ -35,7 +49,6 @@ public class VertexGameObject : MonoBehaviour
             Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject == this.gameObject)
             {
-                Debug.Log("entered");
                 isSelected = true;
                 SetColor(0.2f);
                 return;
@@ -44,20 +57,19 @@ public class VertexGameObject : MonoBehaviour
         isSelected = false;
         SetColor();
 
-        _keyText.text = vertex.Key.ToString();
-
     }
 
     public void SetRestrictionInternal(RestrictionType type)
     {
         if (type == RestrictionType.Start)
         {
-            _color = Color.green;
-
+            _borderRenderer.gameObject.SetActive(true);
+            _borderRenderer.color = Color.green;
         }
         else if (type == RestrictionType.End)
         {
-            _color = Color.red;
+            _borderRenderer.gameObject.SetActive(true);
+            _borderRenderer.color = Color.red;
         }
         else if (type == RestrictionType.Key)
         {
@@ -65,6 +77,7 @@ public class VertexGameObject : MonoBehaviour
         }
         else if(type == RestrictionType.None)
         {
+            _borderRenderer.gameObject.SetActive(false);
             _color = _baseColor;
         }
         SetColor();
@@ -73,9 +86,9 @@ public class VertexGameObject : MonoBehaviour
     public Color SetColor(float darker = 0f)
     {
         var c = _color;
-        if(vertex.IsStart) c = Color.green;
-        else if(vertex.IsExit) c = Color.red;
-        return _spriteRenderer.color = c.Darker(darker);
+        //if(vertex.IsStart) c = Color.green;
+        //else if(vertex.IsExit) c = Color.red;
+        return _spriteRenderer.color = c.Lighter(darker);
     }
 
     private void OnMouseEnter()
