@@ -15,6 +15,7 @@ public class GraphRenderer : MonoBehaviour
     [SerializeField] private GameObject _vertexPrefab;
     [SerializeField] private GameObject _edgePrefab;
     [SerializeField] private GameObject _tempEdgePrefab;
+    [SerializeField] private ErrorListComponent _errors;
     [SerializeField] private Button _addVertexButton;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _loadButton;
@@ -66,6 +67,9 @@ public class GraphRenderer : MonoBehaviour
             SpawnVertices(FindObjectOfType<DataHolder>().VertexPositions);
         }
 
+        SetVertexRestriction(_vertices.Single(v => v.vertex.Name == "v0"), RestrictionType.Start);
+        SetVertexRestriction(_vertices.Single(v => v.vertex.Name == "v2"), RestrictionType.End);
+
         SpawnEdges();
     }
 
@@ -112,6 +116,16 @@ public class GraphRenderer : MonoBehaviour
         else if(Input.GetKeyDown(KeyCode.Delete) && hoveredEdge != null)
         {
             DestroyEdge(hoveredEdge);
+        }
+
+        if(Graph.ValidationErrors.Any())
+        {
+            _errors.tipToShow = string.Join("\n", Graph.ValidationErrors.ToArray());
+            _errors.gameObject.SetActive(true);
+        }
+        else if(Graph.IsValid && _errors.gameObject.activeInHierarchy)
+        {
+            _errors.gameObject.SetActive(false);
         }
 
         _edges = FindObjectsOfType<EdgeGameObject>().ToList();

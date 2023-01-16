@@ -28,7 +28,37 @@ namespace Graphs
         {
             get
             {
-                return IsConnected;
+                return !ValidationErrors.Any();
+            }
+        }
+
+        public List<string> ValidationErrors
+        {
+            get
+            {
+                var errors = new List<string>();
+                if (!IsConnected)
+                    errors.Add("Graf musi byæ spójny.");
+
+                try
+                {
+                    Vertices.Single(v => v.IsStart);
+                }
+                catch(Exception)
+                {
+                    errors.Add("Musi istnieæ dok³adnie jeden wierzcho³ek START.");
+                }
+
+                try
+                {
+                    Vertices.Single(v => v.IsExit);
+                }
+                catch (Exception)
+                {
+                    errors.Add("Musi istnieæ dok³adnie jeden wierzcho³ek EXIT.");
+                }
+
+                return errors;
             }
         }
 
