@@ -251,7 +251,7 @@ public class WFCComponent : MonoBehaviour
                     x = texx.width,
                     y = texx.height,
                     bytes = ImageConversion.EncodeToPNG(texx),
-                    Walkable = tiles[t >= tiles.Count ? tiles.Count - 1 : t].Walkable
+                    Walkable = _algorithm.OriginTiles[t].room.HasValue
                 };
             }
             var tt = _board[row, _height - 1]._superposition.Single();
@@ -285,6 +285,7 @@ public class WFCComponent : MonoBehaviour
         public int StartY { get; set; }
         public int EndX { get; set; }
         public int EndY { get; set; }
+        public List<(int x, int  y)> RoomCentres { get; set; }
         public TileInfo[,] TileInfo { get; set; }
     }
 

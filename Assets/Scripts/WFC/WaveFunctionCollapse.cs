@@ -16,6 +16,8 @@ public class WaveFunctionCollapse
 
     public Vector2Int? startRoomLocation = null;
     public Vector2Int? endRoomLocation = null;
+    public List<(int x, int y)> roomCentres = new();
+    public List<(int room, int lx, int ly)> locksInfo = new(); // lx -> lock_x, ly -> lock_y
 
     private List<List<(Vector2Int, int)>> _neighborhoods = new List<List<(Vector2Int, int)>>();
     private List<(int from, int to, int? key)> _edgeInfo = new();
@@ -45,13 +47,14 @@ public class WaveFunctionCollapse
         _queue = new EntropyQueue(_board, _randomEngine, EntropySort);
 
         var vertexList = _graph.Vertices;
+        var e = _graph.Edges;
 
         for(int i = 0; i < vertexList.Count; i++)
         {
             for(int j = i + 1; j < vertexList.Count; j++)
             {
                 if(graph.CheckEdge(i, j)) 
-                    _edgeInfo.Add((i, j, null));
+                    _edgeInfo.Add((i, j, e[vertexList[i]][vertexList[j]].Key));
             }
         }
 
@@ -366,6 +369,8 @@ public class WaveFunctionCollapse
                 return null;
         } // end paths
 
+        for(int i = 0; i < roomLocations.Count; i++)
+            roomCentres.Add((roomLocations[i].x, roomLocations[i].y));
 
         return _modified = sumModified;
 

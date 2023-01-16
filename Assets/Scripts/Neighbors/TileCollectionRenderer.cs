@@ -108,8 +108,8 @@ public class TileCollectionRenderer : MonoBehaviour
         var zipPath = EditorUtility.SaveFilePanel(
           "Save tileset",
           "",
-          "tileset" + ".zip",
-          "zip");
+          "tileset" + ".tset",
+          "tset");
         if (zipPath.Length == 0)
         {
             Debug.LogError("failed to choose info path");
