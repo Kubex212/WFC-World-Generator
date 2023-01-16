@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: MenuMaterial
+  m_Name: WFCMaterial
   m_Shader: {fileID: 4800000, guid: 82d629532243603499c150ed8b0ec1ea, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords: []
@@ -79,8 +79,8 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.48713955, g: 0.75917673, b: 0.8396226, a: 1}
-    - _CursorPosition: {r: 0.55198646, g: 1.0706921, b: 0, a: 0}
+    - _Color: {r: 0.32498217, g: 0.5778826, b: 0.6320754, a: 1}
+    - _CursorPosition: {r: 0.8216399, g: 0.88365245, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Offset: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

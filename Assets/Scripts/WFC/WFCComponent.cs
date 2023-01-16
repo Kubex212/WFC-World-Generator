@@ -232,6 +232,9 @@ public class WFCComponent : MonoBehaviour
 
         var tiles = FindObjectOfType<DataHolder>().Tiles.tiles;
 
+        var data = FindObjectOfType<DataHolder>();
+        var edges = data.Graph.EdgeList;
+        var vertices = data.Graph.Vertices;
         var eo = new ExportObject2()
         {
             Width = _width,
@@ -241,38 +244,35 @@ public class WFCComponent : MonoBehaviour
             EndX = _algorithm.endRoomLocation.HasValue ? _algorithm.endRoomLocation.Value.x : -1,
             EndY = _algorithm.endRoomLocation.HasValue ? _algorithm.endRoomLocation.Value.y : -1,
             TileInfo = new TileInfo[_width, _height],
-            RoomCenters = new (int, int)[_algorithm.roomLocations.Count]
+            RoomCenters = new (int, int, int?)[vertices.Count],
+            Corridors = new (int, int)?[edges.Count]
         };
-        foreach (var center in _algorithm.roomLocations)
-            eo.RoomCenters[center.Key] = (center.Value.x, center.Value.y);
+        foreach (var cell in _algorithm.roomLocations.Keys)
+        {
+            var room = _algorithm.roomLocations[cell];
+            eo.RoomCenters[cell] = (room.x, room.y, vertices[cell].Key);
+        }
 
         if (_board.GetLength(0) == 0 || _board.GetLength(1) == 0)
             return;
 
-        for (int row = 0; row < _width; row++)
+        for (int x = 0; x < _width; x++)
         {
-            for (int col = 0; col < _height - 1; col++)
+            for (int y = 0; y < _height; y++)
             {
-                Debug.Log($"{row}, {col}");
-                var t = _board[row, col]._superposition.Single();
-                var texx = _board[row, col].GetComponent<Image>().sprite.texture;
-                eo.TileInfo[row, col] = new TileInfo()
+                Debug.Log($"{x}, {y}");
+                var t = _board[x, y]._superposition.Single();
+                var tex = _board[x, y].GetComponent<Image>().sprite.texture;
+                eo.TileInfo[x, y] = new TileInfo()
                 {
-                    x = texx.width,
-                    y = texx.height,
-                    bytes = ImageConversion.EncodeToPNG(texx),
+                    x = tex.width,
+                    y = tex.height,
+                    bytes = ImageConversion.EncodeToPNG(tex),
                     Walkable = _algorithm.OriginTiles[t].room.HasValue
                 };
+                if (t >= _algorithm.StandardTileCount)
+                    eo.Corridors[_algorithm.OriginTiles[t].room.Value] = (x, y);
             }
-            var tt = _board[row, _height - 1]._superposition.Single();
-            var tex = _board[row, _height - 1].GetComponent<Image>().sprite.texture;
-            eo.TileInfo[row, _height - 1] = new TileInfo()
-            {
-                x = tex.width,
-                y = tex.height,
-                bytes = ImageConversion.EncodeToPNG(tex),
-                Walkable = tiles[tt].Walkable
-            };
         }
 
         string text = JsonConvert.SerializeObject(eo);
@@ -295,7 +295,8 @@ public class WFCComponent : MonoBehaviour
         public int StartY { get; set; }
         public int EndX { get; set; }
         public int EndY { get; set; }
-        public (int, int)[] RoomCenters { get; set; }
+        public (int, int, int?)[] RoomCenters { get; set; }
+        public (int, int)?[] Corridors { get; set; }
         public TileInfo[,] TileInfo { get; set; }
     }
 
