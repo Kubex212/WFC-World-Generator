@@ -231,10 +231,13 @@ public class WFCComponent : MonoBehaviour
             Height = _height,
             StartX = _algorithm.startRoomLocation.HasValue ? _algorithm.startRoomLocation.Value.x : -1,
             StartY = _algorithm.startRoomLocation.HasValue ? _algorithm.startRoomLocation.Value.y : -1,
-            EndX = _algorithm.startRoomLocation.HasValue ? _algorithm.endRoomLocation.Value.x : -1,
-            EndY = _algorithm.startRoomLocation.HasValue ? _algorithm.endRoomLocation.Value.y : -1,
-            TileInfo = new TileInfo[_width, _height]
+            EndX = _algorithm.endRoomLocation.HasValue ? _algorithm.endRoomLocation.Value.x : -1,
+            EndY = _algorithm.endRoomLocation.HasValue ? _algorithm.endRoomLocation.Value.y : -1,
+            TileInfo = new TileInfo[_width, _height],
+            RoomCenters = new (int, int)[_algorithm.roomLocations.Count]
         };
+        foreach (var center in _algorithm.roomLocations)
+            eo.RoomCenters[center.Key] = (center.Value.x, center.Value.y);
 
         if (_board.GetLength(0) == 0 || _board.GetLength(1) == 0)
             return;
@@ -285,7 +288,7 @@ public class WFCComponent : MonoBehaviour
         public int StartY { get; set; }
         public int EndX { get; set; }
         public int EndY { get; set; }
-        public List<(int x, int  y)> RoomCentres { get; set; }
+        public (int, int)[] RoomCenters { get; set; }
         public TileInfo[,] TileInfo { get; set; }
     }
 

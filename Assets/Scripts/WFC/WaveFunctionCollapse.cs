@@ -19,6 +19,7 @@ public class WaveFunctionCollapse
     public List<(int x, int y)> roomCentres = new();
     public List<(int room, int lx, int ly)> locksInfo = new(); // lx -> lock_x, ly -> lock_y
 
+    public Dictionary<int, Vector2Int> roomLocations = null;
     private List<List<(Vector2Int, int)>> _neighborhoods = new List<List<(Vector2Int, int)>>();
     private List<(int from, int to, int? key)> _edgeInfo = new();
     private HashSet<int>[,] _board;
@@ -196,7 +197,7 @@ public class WaveFunctionCollapse
     }
     public Modification SeedRooms(Graphs.UndirectedGraph graph)
     {
-        var roomLocations = new Dictionary<int, Vector2Int>();
+        roomLocations = new Dictionary<int, Vector2Int>();
         var map = new Dictionary<Vector2Int, PathingNode>();
 
         var unwalkableTiles = OriginTiles.Take(_standardTileCount).Where(t => !t.room.HasValue).Select(t => OriginTiles.IndexOf(t)).ToList();
