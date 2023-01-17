@@ -15,10 +15,19 @@ public class MainMenuManager : MonoBehaviour
 
     void Start()
     { 
+        var dh = FindObjectOfType<DataHolder>();
         _graphsButton.onClick.AddListener(GoToGraphs);
         _neighborhoodButton.onClick.AddListener(GoToNeighborhood);
         _synthesisButton.onClick.AddListener(GoToSynthesis);
         _exitButton.onClick.AddListener(Application.Quit);
+        if(dh.Tiles != null && dh.Graph != null)
+        {
+            _synthesisButton.interactable = true;
+        }
+        else
+        {
+            _synthesisButton.interactable = false;
+        }
     }
 
     private void GoToGraphs()

@@ -21,6 +21,7 @@ public class WFCComponent : MonoBehaviour
     [SerializeField] private Button _retryButton;
     [SerializeField] private Button _exportButton;
     [SerializeField] private Button _returnToMainMenuButton;
+    [SerializeField] private ErrorListComponent _errors;
 
     [SerializeField] private GameObject _cellPrefab;
 
@@ -69,6 +70,16 @@ public class WFCComponent : MonoBehaviour
             _exportButton.interactable = true;
         else
             _exportButton.interactable = false;
+
+        if(_algorithm.State == WaveFunctionCollapse.AlgorithmState.Paradox)
+        {
+            _errors.tipToShow = "Wyst¹pi³ paradoks. Spróbuj cofn¹æ ruch lub zresetuj planszê.";
+            _errors.gameObject.SetActive(true);
+        }
+        else
+        {
+            _errors.gameObject.SetActive(false);
+        }
 
         if (Input.GetKeyDown(KeyCode.G))
             Serialize();
