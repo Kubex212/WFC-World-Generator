@@ -56,6 +56,7 @@ public class WFCComponent : MonoBehaviour
             }
         }
         Init();
+        
     }
 
     // Update is called once per frame
@@ -120,6 +121,17 @@ public class WFCComponent : MonoBehaviour
         UpdateVisuals(modified);
 
         _randomSeed++;
+
+        if (_algorithm.State == WaveFunctionCollapse.AlgorithmState.Running)
+        {
+            _board[_algorithm.startRoomLocation.Value.x, _algorithm.startRoomLocation.Value.y].type = CellType.Start;
+            _board[_algorithm.startRoomLocation.Value.x, _algorithm.startRoomLocation.Value.y].GetComponent<Image>().color =
+                UnityEngine.Color.green;
+
+            _board[_algorithm.endRoomLocation.Value.x, _algorithm.endRoomLocation.Value.y].type = CellType.End;
+            _board[_algorithm.endRoomLocation.Value.x, _algorithm.endRoomLocation.Value.y].GetComponent<Image>().color =
+                new UnityEngine.Color(0.9f, 0f, 0f);
+        }
     }
 
     private void Back()

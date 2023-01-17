@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class CellComponent : MonoBehaviour
 {
     public HashSet<int> _superposition = new HashSet<int>();
+    public CellType type = CellType.None;
     private int _maxPossibilities;
     private Func<int, string> _roomNameFunc;
     public bool Paradox
@@ -30,6 +31,7 @@ public class CellComponent : MonoBehaviour
             _superposition.Add(i);
         }
         _paradox = false;
+        type = CellType.None;
         SetVisuals();
     }
     public void Remove(IEnumerable<int> indexes)
@@ -48,6 +50,9 @@ public class CellComponent : MonoBehaviour
 
     private void SetVisuals()
     {
+        if (type != CellType.None)
+            return;
+
         if (_superposition.Count == 0 || _paradox)
         {
             _paradox = true;
@@ -59,6 +64,7 @@ public class CellComponent : MonoBehaviour
         {
             var sp = GetComponent<Image>().sprite = SpriteAtlas.Atlas[_superposition.First()];
             SetRoom(_superposition.First());
+            var c = GetComponent<Image>().color;
             GetComponent<Image>().color = Color.white;
         }
         else
@@ -74,4 +80,11 @@ public class CellComponent : MonoBehaviour
         GetComponentInChildren<TextMeshProUGUI>().text = room.HasValue ? _roomNameFunc(room.Value) : "?";
     }
     private bool _paradox = false;
+}
+
+public enum CellType
+{
+    Start,
+    End,
+    None
 }
