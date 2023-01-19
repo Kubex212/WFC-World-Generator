@@ -130,6 +130,7 @@ public class WaveFunctionCollapse
             for (int dir = 0; dir < 8; dir++)
             {
                 var coord = DirectionEnum((Tiles.Direction)dir);
+                var oppositeCoord = DirectionEnum((Tiles.Direction)((dir + 4) % 8));
                 if (!tileset.diagonal && dir % 2 == 1)
                     for (int index = 0; index < OriginTiles.Count; index++)
                         _neighborhoods[i].Add((coord, index));
@@ -143,7 +144,7 @@ public class WaveFunctionCollapse
                                     originTile.room.Value == edge.from)
                                 {
                                     _neighborhoods[i].Add((coord, originTile.index));
-                                    _neighborhoods[originTile.index].Add((coord, i));
+                                    _neighborhoods[originTile.index].Add((oppositeCoord, i));
                                 }
                                 else
                                 {
@@ -153,7 +154,7 @@ public class WaveFunctionCollapse
                             else
                             {
                                 _neighborhoods[i].Add((coord, originTile.index));
-                                _neighborhoods[originTile.index].Add((coord, i));
+                                _neighborhoods[originTile.index].Add((oppositeCoord, i));
                             }
             }
         }
@@ -353,15 +354,18 @@ public class WaveFunctionCollapse
                 for (int y = 0; y < _board.GetLength(1); y++)
                     if(_board[x, y].Count > 1)
                     {
+                        var modif = LimitSuperposition(new(x, y), tilesToLeave);
+                        if (modif.Count == 0)
+                            continue;
                         if (!_modified.Tiles.ContainsKey(new(x, y)))
                             _modified.Tiles.Add(new(x, y), new());
-                        _modified.Tiles[new (x,y)].AddRange(LimitSuperposition(new(x, y), tilesToLeave));
+                        _modified.Tiles[new (x,y)].AddRange(modif);
                     }
         // propagate
             Propagate();
             sumModified += _modified;
             if (State == AlgorithmState.Paradox)
-                return null;
+                return _modified = sumModified;
         } // end paths
 
 
