@@ -180,6 +180,7 @@ public class GraphRenderer : MonoBehaviour
     {
         var newVertex = Graph.AddVertex();
         var vertexGO = Instantiate(original: _vertexPrefab);
+        vertexGO.transform.position = Vector3.zero;
         vertexGO.GetComponent<VertexGameObject>().vertex = newVertex;
         _vertices = new List<VertexGameObject>(FindObjectsOfType<VertexGameObject>());
     }

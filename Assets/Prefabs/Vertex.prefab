@@ -356,7 +356,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1431448119035966757
 Transform:
   m_ObjectHideFlags: 0
@@ -534,6 +534,7 @@ MonoBehaviour:
   _keyText: {fileID: 3575955395799941180}
   _keyPanel: {fileID: 5843718372115948086}
   _borderRenderer: {fileID: 1326350369258239420}
+  _graphRenderer: {fileID: 0}
   isSelected: 0
 --- !u!58 &6133079503619883834
 CircleCollider2D:

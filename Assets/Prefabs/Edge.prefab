@@ -188,7 +188,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5942405973316684494
 Transform:
   m_ObjectHideFlags: 0
@@ -392,7 +392,7 @@ MonoBehaviour:
   _lineRenderer: {fileID: 2766938784412797876}
   _meshCollider: {fileID: 1844062398207563915}
   _baseColor: {r: 0.03474832, g: 0.01201495, b: 0.16981131, a: 1}
-  _colorWithKey: {r: 0.6745098, g: 0, b: 1, a: 1}
+  _colorWithKey: {r: 0.03529412, g: 0.011764706, b: 0.16862746, a: 1}
   _graphRenderer: {fileID: 0}
   _lockText: {fileID: 3209224779148224884}
   _lockPanel: {fileID: 4748710346894025238}
