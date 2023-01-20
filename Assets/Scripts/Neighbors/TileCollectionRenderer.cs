@@ -70,15 +70,18 @@ public class TileCollectionRenderer : MonoBehaviour
 
     public void AddButton()
     {
-        var imageFile = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false)[0];
+        var imageFiles = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false);
 
-        if (!File.Exists(imageFile))
+        foreach (var imageFile in imageFiles)
         {
-            Debug.Log("Didn't choose a file");
-            return;
+            if (!File.Exists(imageFile))
+            {
+                Debug.LogError("Could not find file");
+                return;
+            }
+            var newTile = _tileCollection.AddTile();
+            AddTileObject(newTile, imageFile);
         }
-        var newTile = _tileCollection.AddTile();
-        AddTileObject(newTile, imageFile);
     }
     private void AddTileObject(Tile tile, string imageFile)
     {
@@ -139,11 +142,10 @@ public class TileCollectionRenderer : MonoBehaviour
 
         if (zipPath == null)
         {
-            zipPath = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false)[0];
+            zipPath = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false).FirstOrDefault();
         }
-        if (zipPath.Length == 0)
+        if (zipPath == null)
         {
-            Debug.LogError("Could not open tileset");
             return;
         }
         var tempPath = Application.temporaryCachePath;
