@@ -14,6 +14,7 @@ using System;
 using UnityEngine.SceneManagement;
 using System.Reflection;
 using SFB;
+using Codice.Utils;
 
 public class TileCollectionRenderer : MonoBehaviour
 {
@@ -52,6 +53,11 @@ public class TileCollectionRenderer : MonoBehaviour
         if(dhTiles != null)
         {
             _tileCollection = dhTiles;
+            Tile.Load(_tileCollection.tiles.Count);
+            var tempPath = Application.temporaryCachePath;
+            var imgPath = Path.Combine(tempPath, "runtime/");
+            SpawnTiles(imgPath);
+            _selectionSlot.Selected = null;
         }
         else
         {
@@ -188,7 +194,7 @@ public class TileCollectionRenderer : MonoBehaviour
     private void OnDestroy()
     {
         CreateAtlas();
-        TempCleanup();
+        //TempCleanup();
     }
     private void CreateAtlas()
     {
