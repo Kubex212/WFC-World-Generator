@@ -20,6 +20,9 @@ public class MainMenuManager : MonoBehaviour
         _neighborhoodButton.onClick.AddListener(GoToNeighborhood);
         _synthesisButton.onClick.AddListener(GoToSynthesis);
         _exitButton.onClick.AddListener(Application.Quit);
+
+        _graphsButton.gameObject.GetComponentInChildren<Toggle>().isOn = dh.Graph != null;
+        _neighborhoodButton.gameObject.GetComponentInChildren<Toggle>().isOn = dh.Tiles != null;
         if(dh.Tiles != null && dh.Graph != null)
         {
             _synthesisButton.interactable = true;
