@@ -84,7 +84,7 @@ Shader "Unlit/MenuShader"
                 float noiseVal1 = Random(gridXY.x*7 + gridXY.y * 458697 + (int)round(_Time.y*speed));
                 float noiseVal2 = Random(gridXY.x*7 + gridXY.y * 458697 + (int)round(_Time.y*speed) + 1);
                 float smoothRand = lerp(noiseVal1, noiseVal2, frac(_Time.y*speed+0.5));
-                float colordif = (Random(gridXY.x * 432 + gridXY.y * 45897)-0.5) / 20;
+                float colordif = 0;// (Random(gridXY.x * 432 + gridXY.y * 45897) - 0.5) / 20;
                 fixed4 col = _Color * fixed4(smoothRand, smoothRand -colordif, smoothRand + colordif,1);// fixed4(0.6, 0.6, 0.6, 1);// fixed4(fixed3(1, 1, 1)* sqrt(1 - length(gridCoord - 0.5)), 1);
 
                 float minimum = min(
