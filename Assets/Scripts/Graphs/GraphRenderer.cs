@@ -9,6 +9,7 @@ using System.IO;
 using UnityEngine.Events;
 using Tiles;
 using UnityEngine.SceneManagement;
+using SFB;
 
 public class GraphRenderer : MonoBehaviour
 {
@@ -204,11 +205,12 @@ public class GraphRenderer : MonoBehaviour
 
         var json = Graph.Serialize(positions);
 
-        var path = EditorUtility.SaveFilePanel(
-          "Save",
-          "",
-          "g" + ".json",
-          "json");
+        //var path = EditorUtility.SaveFilePanel(
+        //  "Save",
+        //  "",
+        //  "g" + ".json",
+        //  "json");
+        var path = StandaloneFileBrowser.SaveFilePanel("Save File", "", "", "");
 
         if (path.Length != 0)
         {
@@ -221,10 +223,11 @@ public class GraphRenderer : MonoBehaviour
     {
         Clear();
 
-        string path = EditorUtility.OpenFilePanel("Overwrite with png", "", "json");
+        var path = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false);
+        //string path = EditorUtility.OpenFilePanel("Overwrite with png", "", "json");
         if (path.Length != 0)
         {
-            var json = File.ReadAllText(path);
+            var json = File.ReadAllText(path[0]);
             Graph.Deserialize(json, out Dictionary<string, (float X, float Y)> positions);
 
             SpawnVertices(positions);

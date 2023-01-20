@@ -13,6 +13,7 @@ using UnityEngine.SceneManagement;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using SFB;
 
 public class WFCComponent : MonoBehaviour
 {
@@ -206,11 +207,13 @@ public class WFCComponent : MonoBehaviour
 
     private void Export()
     {
-        var path = EditorUtility.SaveFilePanel(
-          "Save the result board.",
-          "",
-          "board" + ".csv",
-          "csv");
+        var path = StandaloneFileBrowser.SaveFilePanel("Save File", "", "", "");
+        //var path = EditorUtility.SaveFilePanel(
+        //  "Save the result board.",
+        //  "",
+        //  "board" + ".csv",
+        //  "csv");
+
 
         if (path.Length == 0)
         {
@@ -247,11 +250,12 @@ public class WFCComponent : MonoBehaviour
 
     private void Serialize()
     {
-        var path = EditorUtility.SaveFilePanel(
-          "Save the result board.",
-          "",
-          "board" + ".json",
-          "json");
+        //var path = EditorUtility.SaveFilePanel(
+        //  "Save the result board.",
+        //  "",
+        //  "board" + ".json",
+        //  "json");
+        var path = StandaloneFileBrowser.SaveFilePanel("Save File", "", "", "");
 
         if (path.Length == 0)
         {
