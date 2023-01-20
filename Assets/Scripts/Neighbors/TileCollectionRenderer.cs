@@ -89,42 +89,42 @@ public class TileCollectionRenderer : MonoBehaviour
     }
     private void Save()
     {
-        //var tempPath = UnityEngine.Windows.Directory.temporaryFolder;
-        //var imgPath = Path.Combine(tempPath, "tileset/");
-        //Directory.CreateDirectory(imgPath);
+        var tempPath = Application.temporaryCachePath;
+        var imgPath = Path.Combine(tempPath, "tileset/");
+        Directory.CreateDirectory(imgPath);
 
-        //var zipPaths = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false);
-        ////var zipPath = EditorUtility.SaveFilePanel(
-        ////  "Save tileset",
-        ////  "",
-        ////  "tileset" + ".tset",
-        ////  "tset");
-        //var zipPath = zipPaths[0];
-        //if (zipPath.Length == 0)
-        //{
-        //    Debug.LogError("failed to choose info path");
-        //    return;
-        //}
+        var zipPaths = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false);
+        //var zipPath = EditorUtility.SaveFilePanel(
+        //  "Save tileset",
+        //  "",
+        //  "tileset" + ".tset",
+        //  "tset");
+        var zipPath = zipPaths[0];
+        if (zipPath.Length == 0)
+        {
+            Debug.LogError("failed to choose info path");
+            return;
+        }
 
-        //var jsonPath = Path.Combine(imgPath, Path.ChangeExtension(Path.GetFileName(zipPath), ".json"));
+        var jsonPath = Path.Combine(imgPath, Path.ChangeExtension(Path.GetFileName(zipPath), ".json"));
 
-        //for (int i = 0; i < _tileCollection.tiles.Count; i++)
-        //{
-        //    var tile = _tileCollection.tiles[i];
-        //    var correspondingTileGO = tileObjects[tile];
-        //    string pic = Path.GetFileName(correspondingTileGO.imagePath);
+        for (int i = 0; i < _tileCollection.tiles.Count; i++)
+        {
+            var tile = _tileCollection.tiles[i];
+            var correspondingTileGO = tileObjects[tile];
+            //string pic = Path.GetFileName(correspondingTileGO.imagePath);
 
-        //    File.Copy(correspondingTileGO.imagePath, Path.Combine(imgPath,tile.ToString()), true);
-        //}
+            File.Copy(correspondingTileGO.imagePath, Path.Combine(imgPath, tile.ToString()), true);
+        }
 
-        //var json = _tileCollection.Serialize();
-        //File.WriteAllText(jsonPath, json);
+        var json = _tileCollection.Serialize();
+        File.WriteAllText(jsonPath, json);
 
-        //if (File.Exists(zipPath))
-        //    File.Delete(zipPath);
-        //ZipFile.CreateFromDirectory(imgPath, zipPath);
+        if (File.Exists(zipPath))
+            File.Delete(zipPath);
+        ZipFile.CreateFromDirectory(imgPath, zipPath);
 
-        //Directory.Delete(imgPath, true);
+        Directory.Delete(imgPath, true);
     }
 
     private void Load()
@@ -134,32 +134,32 @@ public class TileCollectionRenderer : MonoBehaviour
 
     private void Load(string zipPath)
     {
-        //Clear();
-        //TempCleanup();
+        Clear();
+        TempCleanup();
 
-        //if(zipPath == null)
-        //{
-        //    zipPath = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false)[0];
-        //}
-        //if (zipPath.Length == 0)
-        //{
-        //    Debug.LogError("Could not open tileset");
-        //    return;
-        //}
-        //var tempPath = UnityEngine.Windows.Directory.temporaryFolder;
-        //var imgPath = Path.Combine(tempPath, "runtime/");
-        //Directory.CreateDirectory(imgPath);
-        //ZipFile.ExtractToDirectory(zipPath, imgPath);
+        if (zipPath == null)
+        {
+            zipPath = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false)[0];
+        }
+        if (zipPath.Length == 0)
+        {
+            Debug.LogError("Could not open tileset");
+            return;
+        }
+        var tempPath = Application.temporaryCachePath;
+        var imgPath = Path.Combine(tempPath, "runtime/");
+        Directory.CreateDirectory(imgPath);
+        ZipFile.ExtractToDirectory(zipPath, imgPath);
 
-        //var jsonPath = Path.Combine(imgPath, Path.ChangeExtension(Path.GetFileName(zipPath), ".json"));
-        //var json = File.ReadAllText(jsonPath);
-        //_tileCollection.Deserialize(json);
+        var jsonPath = Path.Combine(imgPath, Path.ChangeExtension(Path.GetFileName(zipPath), ".json"));
+        var json = File.ReadAllText(jsonPath);
+        _tileCollection.Deserialize(json);
 
-        //FindObjectOfType<DataHolder>().Tiles = _tileCollection;
-        //Tile.Load(_tileCollection.tiles.Count);
-        //SpawnTiles(imgPath);
+        FindObjectOfType<DataHolder>().Tiles = _tileCollection;
+        Tile.Load(_tileCollection.tiles.Count);
+        SpawnTiles(imgPath);
 
-        //_selectionSlot.Selected = null;
+        _selectionSlot.Selected = null;
     }
 
     private void SpawnTiles(string pictures)
@@ -198,9 +198,9 @@ public class TileCollectionRenderer : MonoBehaviour
     }
     private void TempCleanup()
     {
-        //var tempPath = UnityEngine.Windows.Directory.temporaryFolder;
-        //var path = Path.Combine(tempPath, "runtime/");
-        //if(Directory.Exists(path))
-        //    Directory.Delete(path, true);
+        var tempPath = Application.temporaryCachePath;
+        var path = Path.Combine(tempPath, "runtime/");
+        if (Directory.Exists(path))
+            Directory.Delete(path, true);
     }
 }

@@ -368,10 +368,10 @@ public class WaveFunctionCollapse
                 return _modified = sumModified;
         } // end paths
 
-
+        _modified = new();
         FloodFillRoom();
         Propagate();
-        return _modified = sumModified;
+        return _modified += sumModified;
 
         IEnumerable<Vector2Int> GetNeighbors(Vector2Int v)
         {
