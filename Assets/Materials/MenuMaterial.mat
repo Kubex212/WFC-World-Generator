@@ -80,7 +80,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 0.88699996, g: 0.7751933, b: 0.84227735, a: 1}
-    - _CursorPosition: {r: 0.92135024, g: 0.9291045, b: 0, a: 0}
+    - _CursorPosition: {r: 0.8548278, g: 0.7807309, b: 0, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Offset: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []

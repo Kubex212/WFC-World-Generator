@@ -10,7 +10,6 @@ using UnityEngine.UI;
 public class CellComponent : MonoBehaviour
 {
     public HashSet<int> _superposition = new HashSet<int>();
-    public CellType type = CellType.None;
     private int _maxPossibilities;
     private Func<int, string> _roomNameFunc;
     public bool Paradox
@@ -22,6 +21,17 @@ public class CellComponent : MonoBehaviour
             SetVisuals();
         }
     }
+
+    public CellType Type 
+    {
+        get => _cellType;
+        set
+        {
+            _cellType = value;
+            SetVisuals();
+        }
+    }
+
     public void Fill(int tileCount, Func<int, string> roomNameFunc)
     {
         _roomNameFunc = roomNameFunc;
@@ -31,7 +41,7 @@ public class CellComponent : MonoBehaviour
             _superposition.Add(i);
         }
         _paradox = false;
-        type = CellType.None;
+        Type = CellType.None;
         SetVisuals();
     }
     public void Remove(IEnumerable<int> indexes)
@@ -50,8 +60,16 @@ public class CellComponent : MonoBehaviour
 
     private void SetVisuals()
     {
-        if (type != CellType.None)
+        if (Type != CellType.None)
+        {
+            GetComponent<Image>().color = Type switch
+            {
+                CellType.Start => ColorPalette.Green,
+                CellType.End => ColorPalette.Blue,
+                _ => ColorPalette.Black,
+            };
             return;
+        }
 
         if (_superposition.Count == 0 || _paradox)
         {
@@ -71,7 +89,8 @@ public class CellComponent : MonoBehaviour
         {
             GetComponent<Image>().sprite = null;
             SetRoom(null);
-            GetComponent<Image>().color = Color.Lerp(Color.blue, Color.red, (_superposition.Count - 1f) / (_maxPossibilities - 1));
+            var value = (_superposition.Count - 1f) / (_maxPossibilities - 1);
+            GetComponent<Image>().color = Color.Lerp(ColorPalette.Gray, value > 0.5f ? ColorPalette.Red : ColorPalette.Blue, Mathf.Abs(value-0.5f)*2);
         }
     }
 
@@ -80,6 +99,7 @@ public class CellComponent : MonoBehaviour
         GetComponentInChildren<TextMeshProUGUI>().text = room.HasValue ? _roomNameFunc(room.Value) : "?";
     }
     private bool _paradox = false;
+    private CellType _cellType = CellType.None;
 }
 
 public enum CellType

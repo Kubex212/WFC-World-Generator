@@ -137,23 +137,24 @@ public class GraphRenderer : MonoBehaviour
     {
         if (type == RestrictionType.Start)
         {
-            if (vertexGO.vertex.IsStart) return;
+            if (vertexGO.vertex.IsStart || vertexGO.vertex.Key != null) return;
 
             foreach (var v in _vertices)
             {
+                if(v.vertex.IsStart) v.SetRestrictionInternal(RestrictionType.None);
                 v.vertex.IsStart = false;
-                v.SetRestrictionInternal(RestrictionType.None);
             }
 
             vertexGO.vertex.IsStart = true;
             vertexGO.SetRestrictionInternal(type);
         }
-        else if (type == RestrictionType.End)
+        else if (type == RestrictionType.End || vertexGO.vertex.Key != null)
         {
             if (vertexGO.vertex.IsExit) return;
 
             foreach (var v in _vertices)
             {
+                if(v.vertex.IsExit) v.SetRestrictionInternal(RestrictionType.None);
                 v.vertex.IsExit = false;
             }
 
@@ -162,7 +163,7 @@ public class GraphRenderer : MonoBehaviour
         }
         else if (type == RestrictionType.Key)
         {
-            if (vertexGO.vertex.Key != null) return;
+            if (vertexGO.vertex.Key != null || vertexGO.vertex.IsStart || vertexGO.vertex.IsExit) return;
             // add key
             vertexGO.vertex.SetKey(Graph.LowestVertexAvailableKey);
             vertexGO.SetRestrictionInternal(type);
