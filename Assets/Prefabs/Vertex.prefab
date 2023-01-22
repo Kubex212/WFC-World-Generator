@@ -529,7 +529,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _circleCollider: {fileID: 6133079503619883834}
   _color: {r: 1, g: 1, b: 1, a: 1}
-  _baseColor: {r: 0.022794493, g: 0.008009965, b: 0.11320752, a: 1}
+  _baseColor: {r: 0, g: 0, b: 0, a: 1}
   _spriteRenderer: {fileID: 6133079503619883836}
   _keyText: {fileID: 3575955395799941180}
   _keyPanel: {fileID: 5843718372115948086}

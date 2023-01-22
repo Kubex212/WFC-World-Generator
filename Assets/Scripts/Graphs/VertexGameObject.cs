@@ -63,12 +63,12 @@ public class VertexGameObject : MonoBehaviour
         if (type == RestrictionType.Start)
         {
             _borderRenderer.gameObject.SetActive(true);
-            _borderRenderer.color = Color.green;
+            _borderRenderer.color = new Color(60/255f, 112/255f, 10/255f);
         }
         else if (type == RestrictionType.End)
         {
             _borderRenderer.gameObject.SetActive(true);
-            _borderRenderer.color = Color.red;
+            _borderRenderer.color = new Color(28 / 255f, 104 / 255f, 155 / 255f);
         }
         else if (type == RestrictionType.Key)
         {
