@@ -44,16 +44,16 @@ public class WFCComponent : MonoBehaviour
         _board = new CellComponent[_width, _height];
         var tileCollection = FindObjectOfType<DataHolder>().Tiles;
         int size = Math.Max(_width, _height);
-        float pixSize = Math.Min(GetComponent<RectTransform>().rect.width, GetComponent<RectTransform>().rect.height);
+        Vector2 pixSize = new(GetComponent<RectTransform>().rect.width, GetComponent<RectTransform>().rect.height);
         float childSize = _cellPrefab.GetComponent<RectTransform>().rect.width;
-        var scale = pixSize * Vector3.one / size / childSize;
+        var scale = Mathf.Min(pixSize.x,pixSize.y) * Vector3.one / size / childSize;
         for (int x = 0; x < _width; x++)
         {
             for (int y = 0; y < _height; y++)
             {
                 _board[x, y] = Instantiate(original: _cellPrefab, parent: transform).GetComponent<CellComponent>();
                 _board[x, y].GetComponent<RectTransform>().localScale = scale;
-                _board[x, y].GetComponent<RectTransform>().localPosition = GetPos(x, y, size, pixSize);
+                _board[x, y].GetComponent<RectTransform>().localPosition = GetPos(x, y, size);
             }
         }
         Init();
@@ -193,11 +193,13 @@ public class WFCComponent : MonoBehaviour
         }
     }
 
-    private Vector3 GetPos(int x, int y, int size, float pixSize)
+    private Vector3 GetPos(int x, int y, int size)
     {
         var rect = GetComponent<RectTransform>().rect;
-        return new Vector3(x * pixSize, -(y * pixSize), 0)/size
-            + new Vector3(rect.center.x-pixSize/2, rect.center.y+pixSize/2);
+        var tileSize = Mathf.Min(rect.width, rect.height);
+        return new Vector3(x * tileSize, -(y * tileSize), 0)/size
+            + new Vector3(-_width, _height) * tileSize/2/size
+            + new Vector3(rect.center.x, rect.center.y);
     }
 
     private void Export()

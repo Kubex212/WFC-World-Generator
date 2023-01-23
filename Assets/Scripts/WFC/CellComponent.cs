@@ -28,7 +28,7 @@ public class CellComponent : MonoBehaviour
         set
         {
             _cellType = value;
-            SetVisuals();
+            //SetVisuals();
         }
     }
 
@@ -60,17 +60,7 @@ public class CellComponent : MonoBehaviour
 
     private void SetVisuals()
     {
-        if (Type != CellType.None)
-        {
-            GetComponent<Image>().color = Type switch
-            {
-                CellType.Start => ColorPalette.Green,
-                CellType.End => ColorPalette.Blue,
-                _ => ColorPalette.Black,
-            };
-            return;
-        }
-
+        
         if (_superposition.Count == 0 || _paradox)
         {
             _paradox = true;
@@ -104,7 +94,8 @@ public class CellComponent : MonoBehaviour
 
 public enum CellType
 {
+    None,
     Start,
     End,
-    None
+    Center
 }
