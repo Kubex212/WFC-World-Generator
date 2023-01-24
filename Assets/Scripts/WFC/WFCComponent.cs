@@ -20,7 +20,8 @@ public class WFCComponent : MonoBehaviour
     [SerializeField] private Button _goBackButton;
     [SerializeField] private Button _goForwardButton;
     [SerializeField] private Button _retryButton;
-    [SerializeField] private Button _exportButton;
+    [SerializeField] private Button _jsonExportButton;
+    [SerializeField] private Button _csvExportButton;
     [SerializeField] private Button _returnToMainMenuButton;
     [SerializeField] private ErrorListComponent _errors;
 
@@ -39,7 +40,8 @@ public class WFCComponent : MonoBehaviour
         _goBackButton.onClick.AddListener(Back);
         _goForwardButton.onClick.AddListener(Next);
         _retryButton.onClick.AddListener(Init);
-        _exportButton.onClick.AddListener(Export);
+        _jsonExportButton.onClick.AddListener(Export);
+        _csvExportButton.onClick.AddListener(Export);
         _returnToMainMenuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
         _board = new CellComponent[_width, _height];
         var tileCollection = FindObjectOfType<DataHolder>().Tiles;
@@ -68,12 +70,10 @@ public class WFCComponent : MonoBehaviour
         else if (Input.GetKey(KeyCode.LeftArrow))
             Back();
 
-        if (_algorithm.State == WaveFunctionCollapse.AlgorithmState.Finished)
-            _exportButton.interactable = true;
-        else
-            _exportButton.interactable = false;
+        _csvExportButton.interactable = _jsonExportButton.interactable =
+            _algorithm.State == WaveFunctionCollapse.AlgorithmState.Finished;
 
-        if(_algorithm.State == WaveFunctionCollapse.AlgorithmState.Paradox)
+        if (_algorithm.State == WaveFunctionCollapse.AlgorithmState.Paradox)
         {
             _errors.tipToShow = "Wyst¹pi³ paradoks. Spróbuj cofn¹æ ruch lub zresetuj planszê.";
             _errors.gameObject.SetActive(true);

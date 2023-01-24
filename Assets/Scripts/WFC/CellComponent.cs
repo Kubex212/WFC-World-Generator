@@ -66,7 +66,7 @@ public class CellComponent : MonoBehaviour
             _paradox = true;
             GetComponent<Image>().sprite = null;
             SetRoom(null);
-            GetComponent<Image>().color = Color.yellow;
+            GetComponent<Image>().color = ColorPalette.Black;
         }
         else if (_superposition.Count == 1)
         {
