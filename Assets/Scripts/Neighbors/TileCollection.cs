@@ -10,6 +10,7 @@ namespace Tiles
     public class TileCollection
     {
         public List<Tile> tiles = new List<Tile>();
+        public bool IsValid => tiles.Any(t => t.Walkable);
         public Tile edgeTile;
         public bool diagonal;
 
