@@ -54,10 +54,10 @@ public class GraphRenderer : MonoBehaviour
 
             var positions = new Dictionary<string, (float X, float Y)>()
             {
-                [v0.ToString()] = (-3f, -0.5f),
-                [v1.ToString()] = (-0.5f, -0.5f),
-                [v2.ToString()] = (2f, -0.5f),
-                [v3.ToString()] = (-0.5f, -3f)
+                [v0.ToString()] = (-3.5f, 0f),
+                [v1.ToString()] = (-1f, 0f),
+                [v2.ToString()] = (1.5f, 0),
+                [v3.ToString()] = (-1f, -2.5f)
             };
             dataHolder.Graph = Graph;
             SpawnVertices(positions);
@@ -141,8 +141,8 @@ public class GraphRenderer : MonoBehaviour
 
             foreach (var v in _vertices)
             {
-                if(v.vertex.IsStart) v.SetRestrictionInternal(RestrictionType.None);
-                v.vertex.IsStart = false;
+                if(v.vertex.IsStart) 
+                    v.SetRestrictionInternal(RestrictionType.None);
             }
 
             vertexGO.vertex.IsStart = true;
@@ -154,8 +154,8 @@ public class GraphRenderer : MonoBehaviour
 
             foreach (var v in _vertices)
             {
-                if(v.vertex.IsExit) v.SetRestrictionInternal(RestrictionType.None);
-                v.vertex.IsExit = false;
+                if(v.vertex.IsExit) 
+                    v.SetRestrictionInternal(RestrictionType.None);
             }
 
             vertexGO.vertex.IsExit = true;
@@ -211,7 +211,7 @@ public class GraphRenderer : MonoBehaviour
         //  "",
         //  "g" + ".json",
         //  "json");
-        var path = StandaloneFileBrowser.SaveFilePanel("Save File", "", "", "");
+        var path = StandaloneFileBrowser.SaveFilePanel("Zapisz plik", "", "graf", "json");
 
         if (path.Length != 0)
         {
@@ -224,7 +224,7 @@ public class GraphRenderer : MonoBehaviour
     {
         Clear();
 
-        var path = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false);
+        var path = StandaloneFileBrowser.OpenFilePanel("Wybierz plik z grafem", "", "json", false);
         //string path = EditorUtility.OpenFilePanel("Overwrite with png", "", "json");
         if (path.Length != 0)
         {
@@ -240,13 +240,13 @@ public class GraphRenderer : MonoBehaviour
 
     private void Clear()
     {
-        foreach(var v in _vertices)
+        foreach(var v in _vertices.Where(v => v != null))
         {
             Destroy(v.gameObject);
         }
         _vertices.Clear();
 
-        foreach(var e in _edges)
+        foreach(var e in _edges.Where(e => e != null))
         {
             Destroy(e.gameObject);
         }

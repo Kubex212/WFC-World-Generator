@@ -32,6 +32,7 @@ public class TileCollectionRenderer : MonoBehaviour
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _loadButton;
     [SerializeField] private Button _backButton;
+    [SerializeField] private ErrorListComponent _errors;
 
 
     void OnEnable()
@@ -65,6 +66,20 @@ public class TileCollectionRenderer : MonoBehaviour
             dhTiles = _tileCollection;
         }
     }
+
+    private void Update()
+    {
+        if (_tileCollection.ValidationErrors.Any())
+        {
+            _errors.tipToShow = string.Join("\n", _tileCollection.ValidationErrors.ToArray());
+            _errors.gameObject.SetActive(true);
+        }
+        else if (_tileCollection.IsValid && _errors.gameObject.activeInHierarchy)
+        {
+            _errors.gameObject.SetActive(false);
+        }
+    }
+
     private void OnRectTransformDimensionsChange()
     {
         foreach (TileComponent obj in tileObjects.Values)

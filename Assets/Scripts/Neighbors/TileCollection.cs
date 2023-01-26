@@ -10,7 +10,28 @@ namespace Tiles
     public class TileCollection
     {
         public List<Tile> tiles = new List<Tile>();
-        public bool IsValid => tiles.Any(t => t.Walkable);
+        public bool IsValid => !ValidationErrors.Any();
+
+        public List<string> ValidationErrors
+        {
+            get
+            {
+                var errors = new List<string>();
+
+                if(!tiles.Any(t => t.Walkable))
+                {
+                    errors.Add("W zestawie kafelków musi byæ przynajmniej jeden kafelek pod³o¿a.");
+                }
+
+                if(!tiles.Any(t => !t.Walkable))
+                {
+                    errors.Add("W zestawie kafelków musi byæ przynajmniej jeden kafelek œciany.");
+                }    
+
+                return errors;
+            }
+        }
+
         public Tile edgeTile;
         public bool diagonal;
 

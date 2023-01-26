@@ -62,13 +62,17 @@ public class VertexGameObject : MonoBehaviour
     {
         if (type == RestrictionType.Start)
         {
+            vertex.IsStart = true;
+            vertex.IsExit = false;
             _borderRenderer.gameObject.SetActive(true);
-            _borderRenderer.color = new Color(60/255f, 112/255f, 10/255f);
+            _borderRenderer.color = ColorPalette.Green;
         }
         else if (type == RestrictionType.End)
         {
+            vertex.IsExit = true;
+            vertex.IsStart = false;
             _borderRenderer.gameObject.SetActive(true);
-            _borderRenderer.color = new Color(28 / 255f, 104 / 255f, 155 / 255f);
+            _borderRenderer.color = ColorPalette.Blue;
         }
         else if (type == RestrictionType.Key)
         {
@@ -76,6 +80,8 @@ public class VertexGameObject : MonoBehaviour
         }
         else if(type == RestrictionType.None)
         {
+            vertex.IsStart = false;
+            vertex.IsExit= false;
             _borderRenderer.gameObject.SetActive(false);
             _color = _baseColor;
         }
@@ -85,8 +91,16 @@ public class VertexGameObject : MonoBehaviour
     public Color SetColor(float darker = 0f)
     {
         var c = _color;
-        //if(vertex.IsStart) c = Color.green;
-        //else if(vertex.IsExit) c = Color.red;
+        if(vertex.IsStart)
+        {
+            _borderRenderer.gameObject.SetActive(true);
+            _borderRenderer.color = ColorPalette.Green;
+        }
+        else if(vertex.IsExit)
+        {
+            _borderRenderer.gameObject.SetActive(true);
+            _borderRenderer.color = ColorPalette.Blue;
+        }
         return _spriteRenderer.color = c.Lighter(darker);
     }
 
