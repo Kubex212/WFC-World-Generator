@@ -14,10 +14,13 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Neighborhoods.unity
     guid: e4b14bd22ae85964ab43de9b11b109d4
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Synthesis.unity
     guid: 97de43ac4bb179a4ab8e49f1002ea5d9
   - enabled: 1
     path: Assets/Scenes/WaveFunctionCollapse.unity
     guid: f1660f6687de02e429300d8ed2f2c836
+  - enabled: 1
+    path: Assets/Scenes/Options.unity
+    guid: ded52edccc7a85440abf3da5e5349f9a
   m_configObjects: {}
