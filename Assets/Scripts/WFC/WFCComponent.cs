@@ -27,7 +27,7 @@ public class WFCComponent : MonoBehaviour
 
     [SerializeField] private GameObject _cellPrefab;
 
-    [SerializeField] private int _randomSeed;
+    private int _randomSeed = Time.frameCount;
 
     private CellComponent[,] _board;
     private int _width = DataHolder.Instance.BoardWidth, _height = DataHolder.Instance.BoardHeight;
