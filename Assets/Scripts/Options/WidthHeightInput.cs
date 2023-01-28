@@ -13,7 +13,7 @@ public class WidthHeightInput : MonoBehaviour
     [SerializeField] private TMP_InputField _widthInput;
     [SerializeField] private TMP_InputField _heightInput;
     [SerializeField] private ErrorListComponent _errors;
-    private int _minWidth = 5, _minHeight = 5;
+    private int _minWidth = 10, _minHeight = 10;
     private int _maxWidth = 500, _maxHeight = 500;
     public List<string> ValidationErrors
     {
