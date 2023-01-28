@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 public class CellComponent : MonoBehaviour
 {
-    public HashSet<int> _superposition = new HashSet<int>();
+    public HashSet<int> superposition = new HashSet<int>();
     private int _maxPossibilities;
     private Func<int, string> _roomNameFunc;
     public bool Paradox
@@ -38,7 +38,7 @@ public class CellComponent : MonoBehaviour
         _maxPossibilities = tileCount;
         for (int i = 0; i < tileCount; i++)
         {
-            _superposition.Add(i);
+            superposition.Add(i);
         }
         _paradox = false;
         Type = CellType.None;
@@ -46,14 +46,14 @@ public class CellComponent : MonoBehaviour
     }
     public void Remove(IEnumerable<int> indexes)
     {
-        _superposition.ExceptWith(indexes);
+        superposition.ExceptWith(indexes);
 
         SetVisuals();
     }
 
     public void Add(IEnumerable<int> indexes)
     {
-        _superposition.UnionWith(indexes);
+        superposition.UnionWith(indexes);
 
         SetVisuals();
     }
@@ -61,17 +61,17 @@ public class CellComponent : MonoBehaviour
     private void SetVisuals()
     {
         
-        if (_superposition.Count == 0 || _paradox)
+        if (superposition.Count == 0 || _paradox)
         {
             _paradox = true;
             GetComponent<Image>().sprite = null;
             SetRoom(null);
             GetComponent<Image>().color = ColorPalette.Black;
         }
-        else if (_superposition.Count == 1)
+        else if (superposition.Count == 1)
         {
-            var sp = GetComponent<Image>().sprite = SpriteAtlas.Atlas[_superposition.First()];
-            SetRoom(_superposition.First());
+            var sp = GetComponent<Image>().sprite = SpriteAtlas.Atlas[superposition.First()];
+            SetRoom(superposition.First());
             var c = GetComponent<Image>().color;
             GetComponent<Image>().color = Color.white;
         }
@@ -79,7 +79,7 @@ public class CellComponent : MonoBehaviour
         {
             GetComponent<Image>().sprite = null;
             SetRoom(null);
-            var value = (_superposition.Count - 1f) / (_maxPossibilities - 1);
+            var value = (superposition.Count - 1f) / (_maxPossibilities - 1);
             GetComponent<Image>().color = Color.Lerp(ColorPalette.Gray, value > 0.5f ? ColorPalette.Red : ColorPalette.Blue, Mathf.Abs(value-0.5f)*2);
         }
     }
