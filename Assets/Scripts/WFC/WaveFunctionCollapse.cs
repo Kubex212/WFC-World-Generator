@@ -220,7 +220,7 @@ public class WaveFunctionCollapse
                         )));
                 }
             var center = new Vector2Int(_board.GetLength(0), _board.GetLength(1))/2;
-            grid = grid.OrderBy((v) => ((v.min + v.max) / 2 - center).sqrMagnitude).ToList();
+            grid = grid.OrderBy((v) => ((v.min + v.max) / 2 - center).sqrMagnitude + _randomEngine.NextDouble()).ToList();
         }
 
         for (int i = 0; i < vertices.Count; i++)

@@ -31,7 +31,7 @@ public class WFCComponent : MonoBehaviour
     [SerializeField] private int _randomSeed;
 
     private CellComponent[,] _board;
-    [SerializeField] private int _width = 10, _height = 10;
+    private int _width = DataHolder.Instance.BoardWidth, _height = DataHolder.Instance.BoardHeight;
 
     private WaveFunctionCollapse _algorithm = null;
 
@@ -126,6 +126,8 @@ public class WFCComponent : MonoBehaviour
 
         if (_algorithm.State == WaveFunctionCollapse.AlgorithmState.Running)
         {
+            foreach (var loc in _algorithm.roomLocations.Values)
+                _board[loc.x, loc.y].Type = CellType.Center;
             _board[_algorithm.startRoomLocation.Value.x, _algorithm.startRoomLocation.Value.y].Type = CellType.Start;
             _board[_algorithm.endRoomLocation.Value.x, _algorithm.endRoomLocation.Value.y].Type = CellType.End;
         }

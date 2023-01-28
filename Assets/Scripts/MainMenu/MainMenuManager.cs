@@ -10,7 +10,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Button _graphsButton;
     [SerializeField] private Button _neighborhoodButton;
     [SerializeField] private Button _synthesisButton;
-    [SerializeField] private Button _authorsButton;
+    [SerializeField] private Button _optionsButton;
     [SerializeField] private Button _exitButton;
 
     void Start()
@@ -19,6 +19,7 @@ public class MainMenuManager : MonoBehaviour
         _graphsButton.onClick.AddListener(GoToGraphs);
         _neighborhoodButton.onClick.AddListener(GoToNeighborhood);
         _synthesisButton.onClick.AddListener(GoToSynthesis);
+        _optionsButton.onClick.AddListener(GoToOptions);
         _exitButton.onClick.AddListener(Application.Quit);
 
         var graphV = dh.Graph != null && dh.Graph.IsValid;
@@ -46,5 +47,9 @@ public class MainMenuManager : MonoBehaviour
     private void GoToSynthesis()
     {
         SceneManager.LoadScene("WaveFunctionCollapse");
+    }
+    private void GoToOptions()
+    {
+        SceneManager.LoadScene("Options");
     }
 }

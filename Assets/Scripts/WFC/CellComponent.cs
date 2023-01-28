@@ -94,8 +94,10 @@ public class CellComponent : MonoBehaviour
 
 public enum CellType
 {
-    None,
-    Start,
-    End,
-    Center
+    None = 0,
+    Start = 1,
+    End = 2,
+    Center = 4,
+    Any = Start | End | Center,
+
 }

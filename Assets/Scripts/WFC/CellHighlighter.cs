@@ -19,7 +19,7 @@ public class CellHighlighter : MonoBehaviour, IPointerEnterHandler, IPointerExit
             if (_lines == null && _hovered)
             {
                 _lines = new();
-                var cells = FindObjectsOfType<CellComponent>().Where(c => c.Type == _target);
+                var cells = FindObjectsOfType<CellComponent>().Where(c => (c.Type & _target) != 0);
                 foreach (var cell in cells)
                 {
                     var line = Instantiate(_linePrefab);
