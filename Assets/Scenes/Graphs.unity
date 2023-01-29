@@ -1235,6 +1235,10 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827115733679, guid: 3d74b71958e8e28409442290ff996723, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+    - target: {fileID: 6765629827115733679, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_fontSizeBase
       value: 18
       objectReference: {fileID: 0}
@@ -1242,6 +1246,10 @@ PrefabInstance:
       propertyPath: m_RaycastTarget
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6765629827115733679, guid: 3d74b71958e8e28409442290ff996723, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
     - target: {fileID: 6765629827531656342, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_Name
       value: TooltipWindow

@@ -90,7 +90,7 @@ public class GraphRenderer : MonoBehaviour
         }
         else if(Input.GetMouseButtonUp(1))
         {
-            if(_tempEdge?.gameObject != null) Destroy(_tempEdge.gameObject);
+            if(_tempEdge != null && _tempEdge.gameObject != null) Destroy(_tempEdge.gameObject);
             var targetVertex = _vertices.Where(v => v.isSelected).FirstOrDefault();
             if(selectedVertex != null && targetVertex != null && selectedVertex != targetVertex)
             {
@@ -222,12 +222,11 @@ public class GraphRenderer : MonoBehaviour
 
     private void Load()
     {
-        Clear();
-
         var path = StandaloneFileBrowser.OpenFilePanel("Wybierz plik z grafem", "", "json", false);
-        //string path = EditorUtility.OpenFilePanel("Overwrite with png", "", "json");
-        if (path.Length != 0)
+
+        if (path.Length != 0 && Path.GetExtension(path[0]) == ".json")
         {
+            Clear();
             var json = File.ReadAllText(path[0]);
             Graph.Deserialize(json, out Dictionary<string, (float X, float Y)> positions);
 

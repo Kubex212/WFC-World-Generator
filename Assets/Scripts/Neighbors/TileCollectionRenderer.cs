@@ -90,14 +90,14 @@ public class TileCollectionRenderer : MonoBehaviour
 
     public void AddButton()
     {
-        var imageFiles = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false);
+        var imageFiles = StandaloneFileBrowser.OpenFilePanel("Wybierz pliki", "", "", false);
 
         foreach (var imageFile in imageFiles)
         {
             if (!File.Exists(imageFile))
             {
-                Debug.LogError("Could not find file");
-                return;
+                //Debug.LogError("Could not find file");
+                continue;
             }
             var newTile = _tileCollection.AddTile();
             AddTileObject(newTile, imageFile);
@@ -112,22 +112,18 @@ public class TileCollectionRenderer : MonoBehaviour
     }
     private void Save()
     {
+        var zipPaths = StandaloneFileBrowser.OpenFilePanel("Zapisz zestaw kafelków", "", "tset", false);
+ 
+        if (zipPaths.Length == 0)
+        {
+            //Debug.LogError("failed to choose info path");
+            return;
+        }
         var tempPath = Application.temporaryCachePath;
         var imgPath = Path.Combine(tempPath, "tileset/");
         Directory.CreateDirectory(imgPath);
 
-        var zipPaths = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false);
-        //var zipPath = EditorUtility.SaveFilePanel(
-        //  "Save tileset",
-        //  "",
-        //  "tileset" + ".tset",
-        //  "tset");
         var zipPath = zipPaths[0];
-        if (zipPath.Length == 0)
-        {
-            Debug.LogError("failed to choose info path");
-            return;
-        }
 
         var jsonPath = Path.Combine(imgPath, Path.ChangeExtension(Path.GetFileName(zipPath), ".json"));
 
@@ -162,9 +158,9 @@ public class TileCollectionRenderer : MonoBehaviour
 
         if (zipPath == null)
         {
-            zipPath = StandaloneFileBrowser.OpenFilePanel("Open File", "", "", false).FirstOrDefault();
+            zipPath = StandaloneFileBrowser.OpenFilePanel("Wybierz zestaw kafelków", "", "tset", false).FirstOrDefault();
         }
-        if (zipPath == null)
+        if (zipPath == null || zipPath.Length == 0 || Path.GetExtension(zipPath) != ".tset")
         {
             return;
         }

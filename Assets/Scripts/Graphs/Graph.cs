@@ -58,6 +58,11 @@ namespace Graphs
                     errors.Add("Musi istnieæ dok³adnie jeden wierzcho³ek EXIT.");
                 }
 
+                if(LowestEdgeAvailableKey != LowestVertexAvailableKey)
+                {
+                    errors.Add("Ka¿dy klucz musi mieæ odpowiadaj¹cy zamek oraz odwrotnie.");
+                }
+
                 return errors;
             }
         }

@@ -28,7 +28,7 @@ public class WFCComponent : MonoBehaviour
 
     [SerializeField] private GameObject _cellPrefab;
 
-    private int _randomSeed = Time.frameCount;
+    private int _randomSeed;
 
     private CellComponent[,] _board;
     private int _width = DataHolder.Instance.BoardWidth, _height = DataHolder.Instance.BoardHeight;
@@ -45,6 +45,7 @@ public class WFCComponent : MonoBehaviour
         _csvExportButton.onClick.AddListener(ExportCsv);
         _returnToMainMenuButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
         _board = new CellComponent[_width, _height];
+        _randomSeed = Time.frameCount;
         var tileCollection = FindObjectOfType<DataHolder>().Tiles;
         int size = Math.Max(_width, _height);
         Vector2 pixSize = new(GetComponent<RectTransform>().rect.width, GetComponent<RectTransform>().rect.height);
@@ -456,41 +457,6 @@ public class WFCComponent : MonoBehaviour
         string text = JsonConvert.SerializeObject(eo);
         File.WriteAllText(path, text);
     }
-
-    //public class ExportObject
-    //{
-    //    public List<Tile> Tiles { get; set; }
-    //    public Tile EdgeTile { get; set; }
-    //    public bool Diagonal { get; set; }
-    //}
-
-    //[Serializable]
-    //public class ExportObject2
-    //{
-    //    public int Width { get; set; }
-    //    public int Height {get; set; }
-    //    public int StartX { get; set; }
-    //    public int StartY { get; set; }
-    //    public int EndX { get; set; }
-    //    public int EndY { get; set; }
-    //    public (int, int, int?)[] RoomCenters { get; set; }
-    //    public (int, int)?[] Corridors { get; set; }
-    //    public TileInfo[,] TileInfo { get; set; }
-    //}
-
-    //[Serializable]
-    //public class TileInfo
-    //{
-    //    [SerializeField]
-    //    public int x;
-    //    [SerializeField]
-    //    public int y;
-    //    [SerializeField]
-    //    public byte[] bytes;
-
-    //    public int? Key;
-    //    public bool Walkable { get; set; }
-    //}
 
     public class RoomCenter
     {
