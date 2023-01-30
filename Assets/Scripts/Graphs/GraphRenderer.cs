@@ -148,7 +148,7 @@ public class GraphRenderer : MonoBehaviour
             vertexGO.vertex.IsStart = true;
             vertexGO.SetRestrictionInternal(type);
         }
-        else if (type == RestrictionType.End || vertexGO.vertex.Key != null)
+        else if (type == RestrictionType.End && vertexGO.vertex.Key == null)
         {
             if (vertexGO.vertex.IsExit) return;
 
@@ -163,7 +163,8 @@ public class GraphRenderer : MonoBehaviour
         }
         else if (type == RestrictionType.Key)
         {
-            if (vertexGO.vertex.Key != null || vertexGO.vertex.IsStart || vertexGO.vertex.IsExit) return;
+            if (vertexGO.vertex.Key != null || vertexGO.vertex.IsStart || vertexGO.vertex.IsExit)
+                return;
             // add key
             vertexGO.vertex.SetKey(Graph.LowestVertexAvailableKey);
             vertexGO.SetRestrictionInternal(type);

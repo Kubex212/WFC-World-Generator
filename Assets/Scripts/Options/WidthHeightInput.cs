@@ -53,10 +53,10 @@ public class WidthHeightInput : MonoBehaviour
     void Awake()
     {
         _widthInput.text = Width.ToString();
-        _widthInput.onValueChanged.AddListener(s => Width = int.Parse(s));
+        _widthInput.onValueChanged.AddListener(s => Width = int.Parse(s == "" ? "0" : s));
 
         _heightInput.text = Height.ToString();
-        _heightInput.onValueChanged.AddListener(s => Height = int.Parse(s));
+        _heightInput.onValueChanged.AddListener(s => Height = int.Parse(s == "" ? "0" : s));
 
         _returnButton.onClick.AddListener(ReturnToMenu);
         Validate();

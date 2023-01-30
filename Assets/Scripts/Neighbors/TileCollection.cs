@@ -26,7 +26,12 @@ namespace Tiles
                 if(!tiles.Any(t => !t.Walkable))
                 {
                     errors.Add("W zestawie kafelków musi byæ przynajmniej jeden kafelek œciany.");
-                }    
+                }
+
+                if (edgeTile == null)
+                {
+                    errors.Add("W zestawie kafelków musi byæ kafelek krawêdzi.");
+                }
 
                 return errors;
             }
