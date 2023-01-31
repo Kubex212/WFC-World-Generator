@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TooltipWindowManager : MonoBehaviour
 {
@@ -32,7 +33,14 @@ public class TooltipWindowManager : MonoBehaviour
         tipWindow.sizeDelta = new Vector2(tipText.preferredWidth > 300 ? 300 : tipText.preferredWidth, tipText.preferredHeight);
 
         tipWindow.gameObject.SetActive(true);
-        tipWindow.transform.position = new Vector2(mousePos.x - tipWindow.sizeDelta.x / 2, mousePos.y);
+        if(SceneManager.GetActiveScene().name == "WaveFunctionCollapse")
+        {
+            tipWindow.transform.position = Camera.main.ScreenToWorldPoint(new Vector2(mousePos.x - tipWindow.sizeDelta.x / 2, mousePos.y)).ZeroZ();
+        }
+        else
+        {
+            tipWindow.transform.position = new Vector2(mousePos.x - tipWindow.sizeDelta.x / 2, mousePos.y);
+        }
     }
 
     private void HideTip()

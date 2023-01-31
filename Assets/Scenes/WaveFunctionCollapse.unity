@@ -771,6 +771,10 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827115733679, guid: 3d74b71958e8e28409442290ff996723, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+    - target: {fileID: 6765629827115733679, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_fontSizeBase
       value: 18
       objectReference: {fileID: 0}
@@ -778,6 +782,10 @@ PrefabInstance:
       propertyPath: m_RaycastTarget
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6765629827115733679, guid: 3d74b71958e8e28409442290ff996723, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
     - target: {fileID: 6765629827531656342, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_Name
       value: TooltipWindow (1)
@@ -788,15 +796,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656424, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_Color.b
-      value: 0.91193485
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656424, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_Color.g
-      value: 0.91193485
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656424, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_Color.r
-      value: 0.9339623
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656424, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_RaycastTarget
@@ -868,11 +876,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 1361.677
+      value: -251
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 104.5
+      value: -111
       objectReference: {fileID: 0}
     - target: {fileID: 6765629827531656425, guid: 3d74b71958e8e28409442290ff996723, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -2951,7 +2959,6 @@ MonoBehaviour:
   _returnToMainMenuButton: {fileID: 2020813464}
   _errors: {fileID: 20840110}
   _cellPrefab: {fileID: 7793470505397479047, guid: db00b28dc6cd72545854c6b2c4f1420a, type: 3}
-  _randomSeed: 2145
 --- !u!224 &1978407337
 RectTransform:
   m_ObjectHideFlags: 0

@@ -224,6 +224,11 @@ public class WFCComponent : MonoBehaviour
         var savePath = StandaloneFileBrowser.SaveFilePanel("Zapisz plik", "", "plansza", "zip");
         var dh = FindObjectOfType<DataHolder>();
 
+        if(string.IsNullOrEmpty(savePath))
+        {
+            return;
+        }
+
         using (var fs = new FileStream(savePath, FileMode.OpenOrCreate))
         {
             var boardSb = new StringBuilder();
@@ -232,7 +237,7 @@ public class WFCComponent : MonoBehaviour
             {
                 for (int col = 0; col < _width; col++)
                 {
-                    var t = _board[row, col].superposition.First();
+                    var t = _board[col, row].superposition.First();
                     t = _algorithm.OriginTiles[t].tile;
                     var room = _algorithm.RoomNameFunc(t) == "" ? "x" : _algorithm.RoomNameFunc(t);
                     boardSb.Append($"{t}|{room}");
@@ -351,7 +356,7 @@ public class WFCComponent : MonoBehaviour
         {
             for(int col = 0; col < _height - 1; col++)
             {
-                var t = _board[row, col].superposition.Single();
+                var t = _board[col, row].superposition.Single();
                 sb.Append($"{t},{tiles[t].Walkable} ");
             }
             var tt = _board[row, _height-1].superposition.Single();
@@ -367,10 +372,11 @@ public class WFCComponent : MonoBehaviour
 
         var path = StandaloneFileBrowser.SaveFilePanel("Zapisz plik", "", "plansza", "json");
 
-        if (path.Length == 0)
+        if (path == null || path.Length == 0)
         {
             return;
         }
+
 
         var tiles = FindObjectOfType<DataHolder>().Tiles.tiles;
 
@@ -381,7 +387,7 @@ public class WFCComponent : MonoBehaviour
         {
             Width = _width,
             Height = _height,
-            TileInfo = new TileId[_height, _width],
+            TileInfo = new TileId[_width, _height],
             RoomCenters = new RoomCenter[vertices.Count],
             Corridors = new Corridor[edges.Count],
             Tiles = new Tile[tiles.Count],
@@ -424,7 +430,7 @@ public class WFCComponent : MonoBehaviour
                 var roomExists = int.TryParse(roomStr, out int room);
                 eo.TileInfo[x, y] = new TileId()
                 {
-                    Id = _algorithm.OriginTiles[t].tile,
+                    Id = t,
                     Room = roomExists ? room : null
                 };
             }

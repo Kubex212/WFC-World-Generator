@@ -32,7 +32,7 @@ public class EdgeGameObject : MonoBehaviour
     {
         if(from == null || to == null)
         {
-            Debug.LogError("[EDGE] one of the vertex is null");
+            //Debug.LogError("[EDGE] one of the vertex is null");
             return;
         }
         var f = from.transform.position;

@@ -61,8 +61,8 @@ public class TileCollectionRenderer : MonoBehaviour
         }
         else
         {
-            var path = Path.Combine(Application.dataPath, "Scripts", "Neighbors", "tileset2.tset");
-            Load(path);
+            //var path = Path.Combine(Application.dataPath, "Scripts", "Neighbors", "tileset2.tset");
+            //Load(path);
             dhTiles = _tileCollection;
         }
     }
@@ -90,11 +90,14 @@ public class TileCollectionRenderer : MonoBehaviour
 
     public void AddButton()
     {
-        var imageFiles = StandaloneFileBrowser.OpenFilePanel("Wybierz pliki", "", "", false);
+        var extensions = new[] {
+            new ExtensionFilter(".png, .jpg ", "png", "jpg"),
+        };
+        var imageFiles = StandaloneFileBrowser.OpenFilePanel("Wybierz pliki", "", extensions, true);
 
         foreach (var imageFile in imageFiles)
         {
-            if (!File.Exists(imageFile))
+            if (!File.Exists(imageFile) || (Path.GetExtension(imageFile) != ".png" && Path.GetExtension(imageFile) != ".jpg"))
             {
                 //Debug.LogError("Could not find file");
                 continue;
@@ -112,7 +115,7 @@ public class TileCollectionRenderer : MonoBehaviour
     }
     private void Save()
     {
-        var zipPaths = StandaloneFileBrowser.OpenFilePanel("Zapisz zestaw kafelków", "", "tset", false);
+        var zipPaths = StandaloneFileBrowser.SaveFilePanel("Zapisz zestaw kafelków", "", "kafelki", "tset");
  
         if (zipPaths.Length == 0)
         {
@@ -123,7 +126,7 @@ public class TileCollectionRenderer : MonoBehaviour
         var imgPath = Path.Combine(tempPath, "tileset/");
         Directory.CreateDirectory(imgPath);
 
-        var zipPath = zipPaths[0];
+        var zipPath = zipPaths;
 
         var jsonPath = Path.Combine(imgPath, Path.ChangeExtension(Path.GetFileName(zipPath), ".json"));
 
@@ -153,9 +156,6 @@ public class TileCollectionRenderer : MonoBehaviour
 
     private void Load(string zipPath)
     {
-        Clear();
-        TempCleanup();
-
         if (zipPath == null)
         {
             zipPath = StandaloneFileBrowser.OpenFilePanel("Wybierz zestaw kafelków", "", "tset", false).FirstOrDefault();
@@ -164,6 +164,9 @@ public class TileCollectionRenderer : MonoBehaviour
         {
             return;
         }
+        Clear();
+        TempCleanup();
+
         var tempPath = Application.temporaryCachePath;
         var imgPath = Path.Combine(tempPath, "runtime/");
         Directory.CreateDirectory(imgPath);

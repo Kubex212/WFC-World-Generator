@@ -12,7 +12,7 @@ public class DataHolder : MonoBehaviour
 
     public Dictionary<string, (float X, float Y)> VertexPositions { get; set; } = null;
     public int BoardWidth { get; set; } = 30;
-    public int BoardHeight { get; set; } = 30;
+    public int BoardHeight { get; set; } = 25;
 
     public static DataHolder Instance { get; private set; } = null;
     void Awake()
